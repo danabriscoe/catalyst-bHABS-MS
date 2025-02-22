@@ -1,0 +1,60 @@
+---
+title: "Catalyst Manuscript: Draft Figures"
+subtitle: "Dana Briscoe"
+date: "`r Sys.Date()`"
+format:
+  html:
+    theme: flatly
+    fontsize: 20px
+    toc: true
+    toc-expand: true	
+    number-sections: false
+    toc-location: left
+    number-depth: 2
+    smooth-scroll: true
+    fig-cap-location: top
+    scrollable: true
+filters:
+  - lightbox
+lightbox: 
+  match: auto
+  effect: zoom
+  desc-position: top
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+```{r, echo = FALSE}
+fontawesome::fa_html_dependency()
+```
+
+<br>
+
+**Summary:**
+Draft figures for co-author review and manuscript consideration. 
+
+<br>
+<br>
+
+## Manuscript Figures
+### Figure 1
+Study area map. 
+
+
+### Figure 2
+Sea-surface Temperature (SST) and sea-surface salinity (sss) climatologies (1993 - 2024)
+
+
+### Figure 3
+
+
+
+## Supplemental Material Figures
+<br>
+
+### Figure S1. 
+SST and SSS projections for SSP 2.6 (A, B) and SSP 8.5 (C, D)
+
+

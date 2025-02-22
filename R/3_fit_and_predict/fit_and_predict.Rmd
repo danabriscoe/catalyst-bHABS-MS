@@ -1,0 +1,273 @@
+---
+title: "fit_and_predict"
+author: "Dana K Briscoe"
+date: "`r Sys.Date()`"
+output: html_document
+params:
+  source: 'glorys'
+  # source: 'gcm'
+  var: 'thetao'
+  # var: 'so'
+  depth: '_0m'
+  scenario: 'ssp26'
+  # scenario: 'ssp85'
+  type: 'histclim'
+  # stat: !r NULL
+  stat: 'all_time_mean'
+  location: 'full'
+  pred_model: 'growth_rate'
+  # pred_model: 'CTX_rate'
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Load libraries ----
+```{r}
+## Load libraries ----
+library(tidyverse)
+library(readxl)
+library(raster)
+library(mgcv)
+library(purrr)
+library(glue)
+library(here)
+```
+
+
+## Source helper functions -----
+```{r}
+
+source(file.path(here() %>% dirname(), 'catalyst-bHABS','utils','catalyst_helper_functions.R')) # UPDATE ME!
+source(here('utils','00_catalyst_helper_functions_MS.R'))
+```
+
+
+## Set spp name -----
+```{r}
+params$spp <- 'G.polynesiensis'
+```
+
+
+## Load regression models -----
+```{r}
+source(here('utils','get_gpoly_model.R'))
+```
+
+
+### Rename model fits -----
+```{r}
+
+if(params$pred_model == 'growth_rate'){
+  model_fit_growth <- growth_GAM
+  model_fit <- model_fit_growth
+} else if(params$pred_model == 'CTX_rate'){
+  model_fit_ctx <- CTX_GAM
+  model_fit <- model_fit_ctx
+}
+
+```
+
+
+### Save Model Fits ----
+```{r}
+## Save model fits ----
+
+if(params$pred_model == 'growth_rate'){
+  ### 1. Growth rates ----
+  f_growth <- here('data', 'model_fits', 'model_fits_growth.rds')
+  if (!file.exists(f_growth)){
+    save(model_fit_growth, file = f_growth)
+  }
+} else if(params$pred_model == 'CTX_rate'){
+  ### 2. CTX ----
+  f_ctx <- here('data', 'model_fits', 'model_fits_ctx.rds')
+  if (!file.exists(f_ctx)){
+    save(model_fit_ctx, file = here('data', 'model_fits', 'model_fits_ctx.rds'))
+  }
+}
+```
+
+
+## Predict -----
+### Get Pred Layes (files)
+```{r}
+# Predict on monthly GLORYS layers or on all-time monthly mean GLORYS laters? Choose former for now & compare.
+
+## Set filepaths -----
+if(params$source=='glorys' & is.null(params$stat)){
+  ## Pull all var files
+  fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/grd'
+  ## Get list of .grd files
+  flist <- list.files(fpath, pattern = "grd$", full.names=T)
+  ## Pull all files by location, var, and type
+  varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*", params$depth,")(?=.*",params$location,")"), 
+                                           .x, 
+                                           perl = TRUE)]) %>% 
+                                    unlist()
+  
+} else if(params$source=='glorys' & !is.null(params$stat)){
+  fpath <- here("data","processed")
+  flist <- list.files(fpath, pattern = "grd$", full.names=T)
+  
+  varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*", params$depth,")(?=.*",params$location,")(?=.*",params$stat,")"), 
+                                           .x, 
+                                           perl = TRUE)]) %>% 
+                                    unlist()
+  
+} else if(params$source=='glorys' & params$stat == "all_time_mean"){
+  fpath <- here("data","processed")
+  flist <- list.files(fpath, pattern = "grd$", full.names=T)
+  
+  varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*", params$depth,")(?=.*",params$location,")(?=.*",params$stat,")"), 
+                                           .x, 
+                                           perl = TRUE)]) %>% 
+                                    unlist()
+
+  
+} else if(params$source=='gcm'){
+  fpath <- here("data","processed")
+  ## Get list of .grd files
+  flist <- list.files(fpath, pattern = "grd$", full.names=T)
+  ## Pull all files by location, var, and type under each RCP or SSP scenario
+  varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*",params$depth,")(?=.*",params$location,")(?=.*",params$scenario,")(?=.*",params$type,")"), 
+                                           .x, 
+                                           perl = TRUE)]) %>% 
+                                    unlist()
+}
+
+
+```
+
+
+### Get Pred Dates ---
+```{r}
+# get dates and predict
+if(params$source=='glorys' & is.null(params$stat)){
+  dates <- getPredDates(x=varfiles, idx = 11)
+
+
+} else if(params$source=='glorys' & params$stat=='all_time_mean'){
+    dates <- getPredDates(x=varfiles, idx = 8)
+  
+} else if(params$source=='gcm'){
+  dates <- str_c(getPredDates(x=varfiles, 6), "_", getPredDates(x=varfiles, 7))[1]
+}  
+```
+
+
+### Run predictions ----
+```{r}
+
+# set up list to store preds for plotting
+n = length(dates)
+
+# fyi: preds_list == gg_list
+# preds_list <- vector("list", length(dates))
+
+# preds_df_list <- 
+preds_list <- 
+    lapply(seq(1,n), function(i) {
+
+# for (i in 1:length(dates)){
+  predDate <- dates[i]
+  print(predDate)
+  
+  # if(is.null(params$stat)){
+  if(params$source == "glorys"){
+    fl <- sapply (predDate, grep, varfiles)
+    predsIn <- varfiles[fl]
+  } else {
+    predsIn <- varfiles
+  }
+  
+  predsurfs <- raster::stack(predsIn)
+  names(predsurfs) <- c("salinity", "temp")
+  
+  # p <- as.data.frame(predsurfs, xy=TRUE)
+  # sort s/t range
+  if(params$location == 'nz'){
+    predsurfs[predsurfs[['salinity']] < 25] <- NA
+    predsurfs[predsurfs[['salinity']] > 40] <- NA
+    
+  } else if(params$location == 'japan'){
+    predsurfs[predsurfs[['salinity']] < 20] <- NA
+    predsurfs[predsurfs[['salinity']] > 40] <- NA
+    
+  } else if(params$location == 'full'){
+    # predsurfs[predsurfs[['salinity']] < 20] <- NA
+     predsurfs[predsurfs[['temp']] < 17.5] <- NA
+     predsurfs[predsurfs[['temp']] > 32.5] <- NA
+      predsurfs[predsurfs[['salinity']] < 20] <- NA
+    predsurfs[predsurfs[['salinity']] > 40] <- NA
+  }
+  
+  if(params$pred_model=='CTX_rate'){
+    predsurfs[predsurfs[['temp']] < 20] <- NA
+  } else {
+    predsurfs[predsurfs[['temp']] < 18.75] <- NA
+    # predsurfs[predsurfs[['temp']] < 17.5] <- NA
+    # predsurfs[predsurfs[['temp']] < 18] <- NA
+  }
+  pred_lm <- predict(predsurfs, model_fit, type = 'response') # fyi, switched from gam to lm obj identifier bc not really a gam
+
+  # pred_lm[pred_lm <= 0 | is.na(pred_lm)] <- 0
+  
+  # pred_df <- ras2pts(pred_lm)
+  pred_lm  # fyi, wait and convert   # ras2pts(pred_lm) in plot preds maps
+  
+})
+```
+
+
+
+```{r}
+if(is.null(params$stat)){
+  preds_list <- preds_list %>% stack () %>% 
+                              calc(., fun = mean, na.rm = T) 
+  
+  dates = "2024-12-31"
+}
+# fyi, get identical results when comparing with terra::app(rstack, fun=mean). do NOT get same results across the board with Stack Apply!
+
+# stackApply(., indices =  rep(1,nlayers(.)), fun = "mean", na.rm = T)
+
+  
+```
+
+```{r}
+names(preds_list) <- dates
+```
+
+
+
+
+## Save predictions ----
+
+```{r}
+if(params$source == "glorys"){
+  if(is.null(params$stat)){
+    pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}")
+  } else if(params$stat == "all_time_mean"){
+    pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}_{params$stat}")
+  }
+} else if (params$source == "gcm"){
+  pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
+} 
+  
+print(str_c('now saving pred list: ', pred_fname))  
+
+# assign(pred_name, preds_df_list)
+```
+
+
+```{r}
+# f = here('data', 'preds', str_c(pred_fname, '.rds'))
+f = here('data', 'preds', str_c(pred_fname, '.rdata'))
+save(preds_list, file = f)
+
+```
+

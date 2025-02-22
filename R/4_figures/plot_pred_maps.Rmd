@@ -1,0 +1,337 @@
+---
+title: "plot pred maps"
+author: "Dana K Briscoe"
+date: "`r Sys.Date()`"
+output: html_document
+params:
+  source: 'glorys'
+  # source: 'gcm'
+  var: 'thetao'
+  # var: 'so'
+  depth: '_0m'
+  scenario: 'ssp26'
+  # scenario: 'ssp85'
+  type: 'histclim'
+  # stat: !r NULL
+  stat: "all_time_mean"
+  location: 'full'
+  pred_model: 'growth_rate'
+  # pred_model: 'CTX_rate'
+  contour_labs: FALSE
+  cbar_ticks_int: 1
+  contours_major: TRUE
+  contours_minor: FALSE
+  cbar: TRUE
+  include_title: TRUE
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Load libraries ----
+```{r}
+## Load libraries ----
+library(tidyverse)
+library(readxl)
+library(raster)
+library(mgcv)
+library(purrr)
+library(glue)
+library(here)
+```
+
+
+## Source helper functions -----
+```{r}
+
+source(file.path(here() %>% dirname(), 'catalyst-bHABS','utils','catalyst_helper_functions.R')) # UPDATE ME!
+source(here('utils','00_catalyst_helper_functions_MS.R'))
+```
+
+```{r}
+## Source dynamically set param values based on var -----
+source(here('utils', '00_params_rmd_plot_setup.R'))
+```
+
+## Set spp name -----
+```{r}
+params$spp <- 'G.polynesiensis'
+```
+
+
+## Load Preds List ----
+```{r}
+# if(params$source == "glorys"){
+#   pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}")
+# } else if (params$source == "gcm"){
+#   pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
+# } 
+# 
+# 
+# f <- here('data', 'preds', str_c(pred_fname, '.rdata'))
+# 
+# load(f) # loads 'preds_df_list' object
+
+```
+
+```{r}
+if(is.null(params$stat)){
+  pred_ras_histclim <- loadRData(here('data', 'preds',
+                                   glue('preds_df_list_{params$pred_model}_histclim_glorys.rdata'))) |> stack()
+} else if (params$stat == "all_time_mean"){
+  pred_ras_histclim <- loadRData(here('data', 'preds',
+                                   glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}.rdata'))) |> stack()
+}
+
+pred_ras_ssp26 <- loadRData(here('data', 'preds',
+                                   glue('preds_df_list_{params$pred_model}_ssp26_gcm.rdata'))) |> stack()
+
+pred_ras_ssp85 <- loadRData(here('data', 'preds',
+                                   glue('preds_df_list_{params$pred_model}_ssp85_gcm.rdata'))) |> stack()
+
+
+```
+
+
+
+
+### Downsample GLORYS to match GCMs?? -----
+```{r}
+### Spatially aggregate to match resolutions (1 x 1 degree gcm layer) ----
+res <- res(pred_ras_ssp26)[1]
+glorys_pred_resamp <- terra::resample(pred_ras_histclim, pred_ras_ssp26, method="bilinear")
+```
+
+
+<!-- ### Ras2Pts ---- -->
+<!-- ```{r} -->
+<!-- pred_df <- ras2pts(glorys_pred_resamp) -->
+
+<!-- ``` -->
+
+
+
+
+
+## Set up plot params -----
+### Get world map ----
+```{r}
+# ## Set variables ----
+mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
+  filter(long >= 100 & long <= 210)
+
+```
+
+### Set bbox -----
+```{r}
+bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+
+```
+
+### Set color pal
+```{r}
+# color pal
+smooth_rainbow <- khroma::colour("smooth rainbow")
+# cpal <- smooth_rainbow(length(seq(0, 100, 1)), range = c(0, 0.9));
+cpal <- c(smooth_rainbow(length(seq(0, 0.25, length=100)), range = c(0, 0.9)), "#9e2a2b", "firebrick4")#, "#540b0e")
+cpal <- rev(cpal)
+```
+
+
+### Set cbar legend title -----
+```{r}
+if(params$pred_model == "growth_rate"){
+  cbar_title = "Growth \nRate \n(div/day)\n"
+} else if(params$pred_model == "CTX_rate"){
+  cbar_title = "Total CTX \nProduction Rate \n(ng/ml/day)\n"
+}
+```
+
+
+
+## Plot pred maps -----
+### Local function to plot maps -----
+```{r}
+
+plot_preds_map <- function(ras, cbar_title = cbar_title){
+  g <- plot_var(data= ras |> ras2pts(), 
+              mapdata, bbox, cpal = rev(cpal), .legend = TRUE, .interp = TRUE)
+  
+  
+  gg <- g + add_border() + resize_cbar(24) +
+    # add_minor_contour_lines(df=ras |> ras2pts() |>
+    #                           mutate(val = value, lon=x, lat=y),
+    #                           contours = .contours_minor, linewidth = 0.5) +
+    add_major_contour_lines(df=ras |> ras2pts() |>
+                              mutate(val = value, lon=x, lat=y), 
+                              contours = .contours_major, linewidth = 0.75) +
+    add_basemap() 
+
+  
+  gg_formatted <- gg %>%
+    addColorBar(., 
+        c("white", rev(cpal[1:93])),
+        limits=limits,   
+        breaks=breaks,
+        cbar_labels=cbar_labels,
+        
+        barheight = 32, plot_type = "continuous") +
+      
+    rename_legend(title = cbar_title)
+  
+  return(gg_formatted)
+}
+  
+```
+
+
+### Plot Preds ----
+
+#### With Neg Preds ---
+
+```{r}
+      
+.contours_major <- seq(0.1, 0.2, 0.1)
+.contours_minor<- seq(0.1, 0.3, 0.05)
+
+limits=c(-0.4, 0.3) 
+breaks=seq(-0.4,0.3,0.05)
+cbar_labels=seq(-0.4,0.3,0.05)
+```
+
+```{r}
+# glorys histclim
+gg_glorys_histclim_pred <- plot_preds_map(ras = glorys_pred_resamp, cbar_title = cbar_title) 
+
+# gcm ssp2.6
+gg_gcm_ssp26_pred <- plot_preds_map(ras = pred_ras_ssp26, cbar_title = cbar_title)
+
+# gcm ssp8.5
+gg_gcm_ssp85_pred <- plot_preds_map(ras = pred_ras_ssp85, cbar_title = cbar_title)
+
+      
+```
+
+#### Save with Neg Preds ----
+```{r}
+
+gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp26_pred, gg_gcm_ssp85_pred)
+names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_neg_vals'),
+                    glue('pred_map_gcm_ssp26_{params$pred_model}_neg_vals'),
+                    glue('pred_map_gcm_ssp85_{params$pred_model}_neg_vals'))
+
+# gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
+
+if(params$stat == "all_time_mean"){
+  gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}.png')) |> as.list()
+} else {
+  gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
+}
+
+## save
+# invisible(mapply(ggsave, file=paste0("plot_", names(gg_list), ".png"), 
+#                  path = here('figs'),
+#                  plot=gg_list))
+
+## save - this works (so does the above commented out option)
+walk2(
+  gg_fnames,
+      gg_list,
+  \(path, plot) ggsave(path, plot, width = 8)
+)
+  
+```
+
+
+#### With Pos Preds Only---
+
+```{r}
+.contours_major <- seq(0.1, 0.2, 0.1)
+.contours_minor<- seq(0.1, 0.3, 0.05)
+      
+limits=c(0, 0.3)  
+breaks=seq(0,0.3,0.025)
+cbar_labels=seq(0,0.3,0.025)
+
+```
+
+```{r}
+makePos <- function(r){
+  r[r < 0] <- 0
+  return(r)
+}
+
+# glorys histclim
+gg_glorys_histclim_pred <- plot_preds_map(ras = glorys_pred_resamp |> makePos(),
+                                          cbar_title = cbar_title) 
+
+# gcm ssp2.6
+gg_gcm_ssp26_pred <- plot_preds_map(ras = pred_ras_ssp26 |> makePos(),   
+                                    cbar_title = cbar_title)
+
+# gcm ssp8.5
+gg_gcm_ssp85_pred <- plot_preds_map(ras = pred_ras_ssp85 |> makePos()
+                                    , cbar_title = cbar_title)
+
+      
+```
+
+#### Save with Pos Preds ----
+```{r}
+
+gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp26_pred, gg_gcm_ssp85_pred)
+names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals'),
+                    glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals'),
+                    glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals'))
+
+if(params$stat == "all_time_mean"){
+  gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}.png')) |> as.list()
+} else {
+  gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
+}
+## save
+# invisible(mapply(ggsave, file=paste0("plot_", names(gg_list), ".png"), 
+#                  path = here('figs'),
+#                  plot=gg_list))
+
+## save - this works (so does the above commented out option)
+walk2(
+  gg_fnames,
+      gg_list,
+  \(path, plot) ggsave(path, plot, width = 8)
+)
+  
+```
+
+
+## Crop Figs ----
+### Sort Files in Chron Order
+```{r}
+# create movie
+library(gtools)
+
+
+# List plots files
+flist <- list.files(here('figs'),pattern = "pred_map",full.names=T)
+plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
+
+plot_files_extent <- plot_files#[grepl(p_extent, plot_files, fixed=TRUE)] 
+
+pfiles <- plot_files_extent[order(basename(plot_files_extent))]
+
+pfiles <- gtools::mixedsort(pfiles)
+
+```
+
+# Crop PNG Frames
+```{r }
+# #intermediate step to crop PNG file and reduce negative space
+
+## use crop image source function ------
+source(here('utils','crop_image.R'))
+crop_image(pfiles)
+
+```
