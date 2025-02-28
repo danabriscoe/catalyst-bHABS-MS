@@ -46,14 +46,16 @@ Historic period ref (1985 - 2014)
 
 **Growth Rate**
 
-- [x]  GLORYS Histclims
+- [x]  GLORYS Histclims (all-time means)
+- [x]  GLORYS Histclims (indiv monthly means)
 - [x]  GCM SSP 2.6
 - [x]  GCM SSP 8.5
 
 
 **CTX Rate**
 
-- []  GLORYS Histclims
-- []  GCM SSP 2.6
-- []  GCM SSP 8.5
+- [x]  GLORYS Histclims (all-time means)
+- [x]  GLORYS Histclims (indiv monthly means)
+- [x]  GCM SSP 2.6
+- [x]  GCM SSP 8.5
 

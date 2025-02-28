@@ -9,14 +9,15 @@ params:
   var: 'thetao'
   # var: 'so'
   depth: '_0m'
-  scenario: 'ssp26'
-  # scenario: 'ssp85'
+  # scenario: 'ssp26'
+  scenario: 'ssp85'
   type: 'histclim'
-  # stat: !r NULL
-  stat: 'all_time_mean'
+  stat: !r NULL
+  # stat: 'all_time_mean'
   location: 'full'
-  pred_model: 'growth_rate'
-  # pred_model: 'CTX_rate'
+  # pred_model: 'growth_rate'
+  pred_model: 'CTX_rate'
+  make_pos: TRUE
 
 ---
 
@@ -199,23 +200,24 @@ preds_list <-
     
   } else if(params$location == 'full'){
     # predsurfs[predsurfs[['salinity']] < 20] <- NA
-     predsurfs[predsurfs[['temp']] < 17.5] <- NA
-     predsurfs[predsurfs[['temp']] > 32.5] <- NA
-      predsurfs[predsurfs[['salinity']] < 20] <- NA
+    predsurfs[predsurfs[['temp']] < 17.5] <- NA
+    predsurfs[predsurfs[['temp']] > 32.5] <- NA
+    predsurfs[predsurfs[['salinity']] < 20] <- NA
     predsurfs[predsurfs[['salinity']] > 40] <- NA
   }
   
-  if(params$pred_model=='CTX_rate'){
-    predsurfs[predsurfs[['temp']] < 20] <- NA
-  } else {
-    predsurfs[predsurfs[['temp']] < 18.75] <- NA
-    # predsurfs[predsurfs[['temp']] < 17.5] <- NA
-    # predsurfs[predsurfs[['temp']] < 18] <- NA
-  }
+  # if(params$pred_model=='CTX_rate'){  # dkbcommented out (mar 2025 bc using 17.5-32.5; 20-40 ranges for both growth rates and ctx rates)
+  #   # predsurfs[predsurfs[['temp']] < 20] <- NA
+  #   predsurfs[predsurfs[['temp']] < 17.5] <- NA
+  #   predsurfs[predsurfs[['temp']] > 32.5] <- NA
+  #   predsurfs[predsurfs[['salinity']] < 20] <- NA
+  #   predsurfs[predsurfs[['salinity']] > 40] <- NA
+  # } 
   pred_lm <- predict(predsurfs, model_fit, type = 'response') # fyi, switched from gam to lm obj identifier bc not really a gam
 
-  # pred_lm[pred_lm <= 0 | is.na(pred_lm)] <- 0
-  
+  if(params$make_pos){
+    pred_lm[pred_lm <= 0 | is.na(pred_lm)] <- 0
+  }
   # pred_df <- ras2pts(pred_lm)
   pred_lm  # fyi, wait and convert   # ras2pts(pred_lm) in plot preds maps
   
@@ -241,8 +243,6 @@ if(is.null(params$stat)){
 ```{r}
 names(preds_list) <- dates
 ```
-
-
 
 
 ## Save predictions ----
