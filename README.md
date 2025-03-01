@@ -59,3 +59,19 @@ Historic period ref (1985 - 2014)
 - [x]  GCM SSP 2.6
 - [x]  GCM SSP 8.5
 
+
+
+### Checklist for pred diffs (mar 2025)
+
+**Growth Rate**
+
+- [x]  GCM SSP 2.6 - GLORYS Histclims 
+- [x]  GCM SSP 8.5 - GLORYS Histclims 
+- [x]  GCM SSP 8.5 - GCM SSP 2.6
+
+
+**CTX Rate**
+
+- [x]  GCM SSP 2.6 - GLORYS Histclims 
+- [x]  GCM SSP 8.5 - GLORYS Histclims 
+- [x]  GCM SSP 8.5 - GCM SSP 2.6
