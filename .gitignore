@@ -49,5 +49,7 @@ po/*~
 rsconnect/
 
 # Manual additions
+.DS_Store
+
 data/
 figs/
