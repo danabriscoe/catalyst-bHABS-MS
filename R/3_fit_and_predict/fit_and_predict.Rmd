@@ -9,14 +9,14 @@ params:
   var: 'thetao'
   # var: 'so'
   depth: '_0m'
-  # scenario: 'ssp26'
-  scenario: 'ssp85'
+  scenario: 'ssp26'
+  # scenario: 'ssp85'
   type: 'histclim'
-  stat: !r NULL
-  # stat: 'all_time_mean'
+  # stat: !r NULL
+  stat: 'all_time_mean'
   location: 'full'
-  # pred_model: 'growth_rate'
-  pred_model: 'CTX_rate'
+  pred_model: 'growth_rate'
+  # pred_model: 'CTX_rate'
   make_pos: TRUE
 
 ---
@@ -94,7 +94,7 @@ if(params$pred_model == 'growth_rate'){
 
 
 ## Predict -----
-### Get Pred Layes (files)
+### Get Pred Layers (files)
 ```{r}
 # Predict on monthly GLORYS layers or on all-time monthly mean GLORYS laters? Choose former for now & compare.
 

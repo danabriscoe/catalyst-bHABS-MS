@@ -1,5 +1,5 @@
 ---
-title: "plot pred maps"
+title: "plot pred diffs maps"
 author: "Dana K Briscoe"
 date: "`r Sys.Date()`"
 output: html_document
@@ -23,25 +23,21 @@ params:
   contours_minor: FALSE
   cbar: TRUE
   include_title: TRUE
-
 ---
-
-## Note: FYI, Only run once (b/c all 3 scenarios are plotted and saved together)!
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ## Load libraries ----
 ```{r}
 ## Load libraries ----
 library(tidyverse)
-library(readxl)
 library(raster)
-library(mgcv)
 library(purrr)
+library(khroma)
+library(RColorBrewer)
+library(terra)
 library(glue)
 library(here)
 ```
@@ -66,19 +62,6 @@ params$spp <- 'G.polynesiensis'
 
 
 ## Load Preds List ----
-```{r}
-# if(params$source == "glorys"){
-#   pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}")
-# } else if (params$source == "gcm"){
-#   pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
-# } 
-# 
-# 
-# f <- here('data', 'preds', str_c(pred_fname, '.rdata'))
-# 
-# load(f) # loads 'preds_df_list' object
-
-```
 
 ```{r}
 if(is.null(params$stat)){
@@ -99,8 +82,6 @@ pred_ras_ssp85 <- loadRData(here('data', 'preds',
 ```
 
 
-
-
 ### Downsample GLORYS to match GCMs?? -----
 ```{r}
 ### Spatially aggregate to match resolutions (1 x 1 degree gcm layer) ----
@@ -109,19 +90,36 @@ glorys_pred_resamp <- terra::resample(pred_ras_histclim, pred_ras_ssp26, method=
 ```
 
 
-<!-- ### Ras2Pts ---- -->
-<!-- ```{r} -->
-<!-- pred_df <- ras2pts(glorys_pred_resamp) -->
+## Get Diffs (Future - Current) ----
+```{r}
+# SSP 2.6 - Glorys ----
+gg_diff_ssp26_glorys <- pred_ras_ssp26 - glorys_pred_resamp
 
-<!-- ``` -->
-
-
-
+gg_diff_ssp26_glorys_df <- as(gg_diff_ssp26_glorys,"Raster") %>% ras2pts()
 
 
-### Set up plot params -----
+# SSP 8.5 - Glorys ----
+gg_diff_ssp85_glorys <- pred_ras_ssp85 - glorys_pred_resamp
 
-#### Get world map ----
+gg_diff_ssp85_glorys_df <- as(gg_diff_ssp85_glorys,"Raster") %>% ras2pts()
+
+
+```
+
+
+## Get Diffs (Future 8.5 - Future 2.6) ----
+```{r}
+# SSP 8.5 - SSP 2.6 ----
+gg_diff_ssp85_ssp26 <- pred_ras_ssp85 - pred_ras_ssp26
+
+gg_diff_ssp85_ssp26_df <- as(gg_diff_ssp85_ssp26,"Raster") %>% ras2pts()
+
+```
+
+
+
+## Set up plot params -----
+### Get world map ----
 ```{r}
 # ## Set variables ----
 mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
@@ -129,126 +127,128 @@ mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
 
 ```
 
-#### Set bbox -----
+### Set bbox -----
 ```{r}
 bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
 
 ```
 
-#### Set color pal
+### Set color pal
 ```{r}
-# color pal
-smooth_rainbow <- khroma::colour("smooth rainbow")
-# cpal <- smooth_rainbow(length(seq(0, 100, 1)), range = c(0, 0.9));
-cpal <- c(smooth_rainbow(length(seq(0, 0.25, length=100)), range = c(0, 0.9)), "#9e2a2b", "firebrick4")#, "#540b0e")
-cpal <- rev(cpal)
+# # color pal
+# smooth_rainbow <- khroma::colour("smooth rainbow")
+# # cpal <- smooth_rainbow(length(seq(0, 100, 1)), range = c(0, 0.9));
+# cpal <- c(smooth_rainbow(length(seq(0, 0.25, length=100)), range = c(0, 0.9)), "#9e2a2b", "firebrick4")#, "#540b0e")
+# cpal <- rev(cpal)
+
+
+div_pal <- rev(c(rev(brewer.pal(9, "YlOrRd")),"white", brewer.pal(9, "Blues")))
 ```
 
 
-#### Set cbar legend title -----
+### Set cbar legend title -----
 ```{r}
 if(params$pred_model == "growth_rate"){
-  cbar_title = "Growth \nRate \n(div/day)\n"
+  cbar_title = "Difference in \nGrowth Rate \n(div/day)\n"
+
 } else if(params$pred_model == "CTX_rate"){
-  cbar_title = "Total CTX \nProduction Rate \n(ng/ml/day)\n"
+  cbar_title = "Difference in \nTotal CTX \nProduction Rate \n(ng/ml/day)\n"
 }
 ```
 
 
-#### Local function to plot maps -----
+### Local function to plot maps -----
 ```{r}
 
-plot_preds_map <- function(ras, cbar_title = cbar_title){
-  g <- plot_var(data= ras |> ras2pts(), 
-              mapdata, bbox, cpal = rev(cpal), .legend = TRUE, .interp = TRUE)
-  
-  
+plot_preds_diff_map <- function(diff_df, cbar_title = cbar_title){
+
+   g <-  plot_var(data=diff_df, mapdata, bbox, cpal = div_pal, .interp=TRUE, .legend = TRUE) 
+   
    gg <- g + add_border() + resize_cbar(27) +
-    # add_minor_contour_lines(df=ras |> ras2pts() |>
+    #  
+    # add_minor_contour_lines(df=diff_df |>
     #                           mutate(val = value, lon=x, lat=y),
     #                           contours = .contours_minor, linewidth = 0.5) +
-    add_major_contour_lines(df=ras |> ras2pts() |>
+    add_major_contour_lines(df=diff_df |>
                               mutate(val = value, lon=x, lat=y), 
                               contours = .contours_major, linewidth = 0.75) +
     add_basemap() 
-
+   
   
-  gg_formatted <- gg %>%
-    addColorBar(., 
-      c("white", rev(cpal[1:93])),
-      limits=limits,   
-      breaks=breaks,
-      cbar_labels=cbar_labels,
-      
-      plot_type = "continuous") +
-      
-    rename_legend(title = cbar_title)
-  
+    gg_formatted <- gg %>%
+      addColorBar(., 
+          div_pal[1:18],
+          limits=limits,   
+          breaks=breaks,
+          cbar_labels=cbar_labels,
+          
+          plot_type = "continuous") +
+      # labs(fill = ifelse(params$pred_model == 'growth_rate', 
+      #                  'Difference in \nGrowth Rate \n(div/day)\n', 
+      #                  'Difference in Total CTX \nProduction Rate \n(ng/ml/day)\n')) +    
+    
+      rename_legend(title = cbar_title)
+    
   return(gg_formatted)
 }
+
+```
+
+
+### Set Plot Limits ----
+```{r}
+
+if(params$pred_model == "growth_rate"){
   
+  .contours_major <- seq(-0.2, 0.2, 0.1)
+  .contours_minor <- seq(-0.2, 0.2, 0.05)
+  
+  limits = c(-0.25,0.25)
+  breaks = seq(-0.25, 0.25, 0.05)
+  cbar_labels = seq(-0.25, 0.25, 0.05)
+  
+} else if(params$pred_model == "CTX_rate"){
+  
+  .contours_major <- seq(-0.6, 0.6, 0.2) 
+  .contours_minor <- seq(-0.6, 0.6, 0.2)
+  
+  limits = c(-0.6,0.6)
+  breaks = seq(-0.6,0.6,0.1) %>% round(., 2)
+  cbar_labels = seq(-0.6,0.6,0.1)  %>% round(., 2)
+  
+}
+
 ```
 
 
 
-#### Set CBar Height ----
+## Plot Diffs ---
 ```{r}
-# .contours_major <- seq(0.1, 0.2, 0.1)
-# .contours_minor<- seq(0.1, 0.3, 0.05)
-#       
-# limits=c(0, 0.3)  
-# breaks=seq(0,0.3,0.025)
-# cbar_labels=seq(0,0.3,0.025)
 
-# if(params$pred_model == "growth_rate"){
-#   cbar_height = 27
-# } else if(params$pred_model == "CTX_rate"){
-#   cbar_height = 29
-# }
+# SSP 2.6 - Glorys ----
+gg_diff_ssp26_glorys_pred <- plot_preds_diff_map(diff_df = gg_diff_ssp26_glorys_df, cbar_title = cbar_title)
+
+
+# SSP 8.5 - Glorys ----
+gg_diff_ssp85_glorys_pred <- plot_preds_diff_map(diff_df = gg_diff_ssp85_glorys_df, cbar_title = cbar_title)
+
+
+# SSP 8.5 - SSP 2.6 ----
+gg_diff_ssp85_ssp26_pred <- plot_preds_diff_map(diff_df = gg_diff_ssp85_ssp26_df, cbar_title = cbar_title)
 
 ```
 
-### Plot Preds ----
-
-#### With Pos Preds Only---
-```{r}
-# makePos <- function(r){
-#   r[r < 0] <- 0
-#   return(r)
-# }
-
-# glorys histclim
-gg_glorys_histclim_pred <- plot_preds_map(ras = glorys_pred_resamp, #cbar_height = cbar_height,
-                                    cbar_title = cbar_title) 
-
-# gcm ssp2.6
-gg_gcm_ssp26_pred <- plot_preds_map(ras = pred_ras_ssp26, #|> makePos(),   
-                                    cbar_title = cbar_title)
-
-# gcm ssp8.5
-gg_gcm_ssp85_pred <- plot_preds_map(ras = pred_ras_ssp85, #|> makePos()
-                                    cbar_title = cbar_title)
-
-      
-```
 
 ### Save with Pos Preds ----
 ```{r}
 
-gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp26_pred, gg_gcm_ssp85_pred)
-names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals'),
-                    glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals'),
-                    glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals'))
+gg_list <- list(gg_diff_ssp26_glorys_pred, gg_diff_ssp85_glorys_pred, gg_diff_ssp85_ssp26_pred)
+names(gg_list) <- c(glue('pred_map_diff_ssp26_glorys_{params$pred_model}_pos_vals'),
+                    glue('pred_map_diff_ssp85_glorys_{params$pred_model}_pos_vals'),
+                    glue('pred_map_diff_ssp85_ssp26_{params$pred_model}_pos_vals'))
 
-if(params$stat == "all_time_mean"){
-  gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}.png')) |> as.list()
-} else {
+
   gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
-}
-## save
-# invisible(mapply(ggsave, file=paste0("plot_", names(gg_list), ".png"), 
-#                  path = here('figs'),
-#                  plot=gg_list))
 
 ## save - this works (so does the above commented out option)
 walk2(
@@ -268,7 +268,7 @@ library(gtools)
 
 
 # List plots files
-flist <- list.files(here('figs'),pattern = "pred_map",full.names=T)
+flist <- list.files(here('figs'),pattern = "pred_map_diff",full.names=T)
 plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
 
 plot_files_extent <- plot_files#[grepl(p_extent, plot_files, fixed=TRUE)] 
@@ -290,17 +290,14 @@ crop_image(pfiles)
 ```
 
 
-
-
 ## Save RData ----
 ```{r}
 ## Save rdata ---- (for ms fig formatting)
 save(
-  gg_glorys_histclim_pred, 
-  gg_gcm_ssp26_pred, 
-  gg_gcm_ssp85_pred,
+  gg_diff_ssp26_glorys_pred, 
+  gg_diff_ssp85_glorys_pred, 
+  gg_diff_ssp85_ssp26_pred,
   
-  file = here('data', 'gg_data', glue('gg_pred_maps_{params$pred_model}.rdata')))
+    file = here('data', 'gg_data', glue('gg_pred_diff_maps_{params$pred_model}.rdata')))
 
 ```
-
