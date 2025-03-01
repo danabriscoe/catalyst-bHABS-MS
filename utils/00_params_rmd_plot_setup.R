@@ -34,8 +34,8 @@ if((params$source=='glorys') | (params$type=='histclim')){
     cbar_labels <- breaks
     
     # set contour labels
-    contours_major <- switch(params$contours_major + 1, NULL, seq(limits[1], limits[2], 1))
-    contours_minor<- switch(params$contours_minor + 1, NULL, seq(limits[1], limits[2], 0.5))
+    contours_major <- switch(params$contours_major + 1, NULL, seq(29, limits[2], 1))
+    contours_minor<- switch(params$contours_minor + 1, NULL, seq(29, limits[2], 0.5))
     
   } # end set var params
 } else if(params$type=='anomaly'){   # end histclim
