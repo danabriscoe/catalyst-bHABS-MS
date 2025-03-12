@@ -1,0 +1,471 @@
+---
+title: "Catalyst Format MS Figures"
+author: "Dana K Briscoe"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+params:
+  # location: 'nz'
+  # location: 'japan'
+  location: 'full'
+  # pred_model: 'growth_rate'
+  pred_model: 'CTX_rate'
+  # out_dir_plots: '../figures/final_figs'
+  contour_labs: TRUE
+  fig_out_ext: '.png'
+  # fig_out_ext: '.jpeg'
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE,
+    eval = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    dpi = 300,
+    fig.align = "center",
+    fig.height = 9
+    )
+
+# See Options: knitr::opts_chunk$get()
+```
+
+## Load libraries ----
+```{r libraries, warning=FALSE,message=FALSE}
+library(tidyverse)
+library(raster)
+library(ggplot2)
+library(stringr)
+library(khroma) # color pal
+library(maps)
+library(sf)
+library(patchwork)
+
+library(cowplot)
+
+library(fontawesome)
+# library(rsconnect)
+library(rmarkdown)
+
+library(patchwork)
+```
+
+
+## Source helper functions -----
+```{r helper-funcs}
+source(file.path(here() %>% dirname(), 'catalyst-bHABS','utils','catalyst_helper_functions.R')) # UPDATE ME!
+source(here('utils','00_catalyst_helper_functions_MS.R'))
+```
+
+
+## Set spp name -----
+```{r}
+params$spp <- 'G.polynesiensis'
+```
+
+
+
+## Set bbox -----
+```{r set-bbox}
+# set bbox based on filename location
+  if (params$location == "japan") {
+    bbox <- tibble(xmin = 120, xmax = 160, ymin = 15, ymax = 60, xstep = 10, ystep = 10)
+  } else if (params$location == "nz") {
+    bbox <- tibble(xmin = 160, xmax = 210, ymin = -15, ymax = -60, xstep = 10, ystep = -10)
+  } else if (params$location == 'full'){
+    bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 20, ystep = 20)#-10)
+  }
+```
+
+
+## Load Files ----
+
+```{r}
+fpattern = c('gg_clims', params$pred_model)
+
+flist = list.files(here('data', 'gg_data'), pattern = paste0(fpattern, collapse="|"), full.names = T) 
+
+lapply(flist, load, environment())
+```
+
+
+<!-- ```{r} -->
+<!-- horizontal_g_legend <- readRDS(file = str_c("../data/processed/pred_outputs/draft_pred_2070_2099_', params$pred_model", "_", params$pred_model, "_", params$location,"_legend_only.rds")) -->
+<!-- ``` -->
+
+## Define gg Funcs
+```{r ggfuncs}
+resize_cbar <- function(x){
+    list(
+        guides(fill = guide_colourbar(barheight =x, ticks = TRUE,
+        frame.colour = "black", ticks.colour = "black"))
+    )
+}
+
+add_border <- function(size=2){
+  list(
+      theme(panel.border = element_rect(colour = "black", fill=NA, size=size))
+  )
+}
+
+format_subtitle <- function(size="14"){
+  list(
+    theme(plot.subtitle=element_text(size=size, hjust=0.5, face="bold", color="black"))
+  )
+}
+
+format_plot_tag <- function(loc, size=5, color = "white", label = "A"){
+  list(
+        annotate("text", 
+             x = 123.5,
+             y = 57, 
+             label = label, col = color, size = size)
+  )
+  
+}
+
+bold_all_text <- function(face="bold"){
+  list(
+    theme(text=element_text(size = 12, face=face))
+  )
+}  
+
+```
+
+```{r func-add-contour-labels}
+add_contour_labels <- function(ras, .contours = .contours_major, 
+                               nudge_x=0, nudge_y=0, line_col="snow"){
+  addContours_major_nudge(x = ., 
+                            contours = getContours(ras, levels = .contours), 
+                            c_show = .contours, bbox = bbox, 
+                            line_size = 1.0, label_size=4, nudge_x=+0, nudge_y=+0,
+                            contour_color = "snow")
+}
+
+```
+
+
+## Define Single-Display Func (1-Panel)
+```{r func-display-single-fig}
+display_single_fig <- function(pright){
+  
+    pright <- pright +  
+      labs(caption = '', x = '') +
+      scale_x_continuous(
+        breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+                     by = bbox$xstep),
+        labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
+                             ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
+                             ifelse(x == 180, paste0(x, "°"), x)))
+      ) + 
+      scale_y_continuous(
+        breaks = seq(bbox$ymin, bbox$ymax, by = bbox$ystep),
+        labels = function(x) paste0(ifelse(x < 0, paste0(abs(x), "°S"),
+                                    ifelse(x > 0, paste0(x, "°N"), x)))
+      ) +
+      theme(plot.subtitle=element_text(size=8)) +
+      theme(legend.position="none") +
+      add_border() + format_subtitle() +
+
+      bold_all_text()
+    
+
+    plot_row <- (pright) 
+    
+    ret_p <-
+      plot_row +
+        plot_annotation(
+          title = '',
+          caption = '',
+          theme = theme(plot.caption = element_text(hjust=0),
+                        text = element_text(size = 12, face="bold"))
+          ) + 
+        plot_layout(
+          guides = 'collect') 
+    
+    return(ret_p)
+}
+```
+
+## Define Multi-Display Func (2-Panel)
+```{r func-display-multi-figs-2panel}
+library(patchwork)
+
+display_multi_figs_2panel <- function(pleft, pright){
+  
+  
+    pleft <- pleft + 
+      labs(caption = '', x = '') +
+      scale_x_continuous(
+        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
+                             ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
+                             ifelse(x == 180, paste0(x, "°"), x)))
+      ) + 
+      scale_y_continuous(
+        breaks = seq(bbox$ymin, bbox$ymax, by = bbox$ystep),
+        labels = function(x) paste0(ifelse(x < 0, paste0(abs(x), "°S"),
+                                    ifelse(x > 0, paste0(x, "°N"), x)))
+      ) +
+      theme(plot.subtitle=element_text(size=8)) +
+      theme(legend.position="none") +
+      add_border() + format_subtitle() +
+      format_plot_tag(label = "A") +
+      bold_all_text()
+    
+    
+    pright <- pright +  
+      labs(caption = '', x = '') +
+      theme(axis.text.y = element_blank(),
+           axis.ticks.y = element_blank(),
+           plot.margin = unit(c(0.02, 0.03, 0.02, 0.03), "null"),
+           legend.title=element_text(size=10.5, face = "bold"),
+           axis.title.y = element_blank()) +
+      scale_x_continuous(
+        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
+                             ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
+                             ifelse(x == 180, paste0(x, "°"), x)))
+      ) + 
+      # resize_cbar(18) +
+      add_border() + format_subtitle() +
+      format_plot_tag(label = "B") +
+      bold_all_text()
+    
+    plot_row <- (pleft + pright) 
+    
+    ret_p <-
+      plot_row +
+        plot_annotation(
+          title = '',
+          caption = '',
+          theme = theme(plot.caption = element_text(hjust=0),
+                        legend.title = element_text(size = 12))
+          ) + 
+        plot_layout(
+          guides = 'collect') 
+    
+    return(ret_p)
+}
+
+```
+
+## Define Multi-Display Func (3-Panel)
+```{r func-display-multi-figs-3panel}
+
+display_multi_figs_3panel <- function(pleft, pcenter, pright){
+  
+  
+    pleft <- pleft + 
+      labs(caption = '', x = '') +
+      scale_x_continuous(
+        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
+                             ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
+                             ifelse(x == 180, paste0(x, "°"), x)))
+      ) + 
+      scale_y_continuous(
+        breaks = seq(bbox$ymin, bbox$ymax, by = bbox$ystep),
+        labels = function(x) paste0(ifelse(x < 0, paste0(abs(x), "°S"),
+                                    ifelse(x > 0, paste0(x, "°N"), x)))
+      ) +
+      theme(plot.subtitle=element_text(size=8)) +
+      theme(legend.position="none") +
+      add_border() + format_subtitle() +
+      format_plot_tag(label = "A") +
+      bold_all_text()
+    
+    pcenter <- pcenter + 
+      labs(caption = '') +
+      scale_x_continuous(
+        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
+                             ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
+                             ifelse(x == 180, paste0(x, "°"), x)))
+      ) + 
+      theme(legend.position="none",
+           axis.text.y = element_blank(),
+           axis.ticks.y = element_blank(),
+           axis.title.y = element_blank()
+           ) +
+      add_border() + format_subtitle() + 
+      format_plot_tag(label = "B") +
+      bold_all_text()
+    
+    
+    pright <- pright +  
+      labs(caption = '', x = '') +
+      theme(axis.text.y = element_blank(),
+           axis.ticks.y = element_blank(),
+           plot.margin = unit(c(0.02, 0.03, 0.02, 0.03), "null"),
+           legend.title=element_text(size=10.5, face = "bold"),
+           axis.title.y = element_blank()) +
+      scale_x_continuous(
+        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
+                             ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
+                             ifelse(x == 180, paste0(x, "°"), x)))
+      ) + 
+      # resize_cbar(18) +
+      add_border() + format_subtitle() +
+      format_plot_tag(label = "C") +
+      bold_all_text()
+    
+    plot_row <- (pleft + pcenter + pright) 
+    
+    ret_p <-
+      plot_row +
+        plot_annotation(
+          title = '',
+          caption = '',
+          theme = theme(plot.caption = element_text(hjust=0),
+                        text = element_text(size = 12))
+          ) + 
+        plot_layout(
+          guides = 'collect') 
+    
+    return(ret_p)
+}
+
+```
+
+
+
+
+## Fig 1: Current Preds vs. SSP 2.6 vs SSP 8.5 - 3 Panel -----------------------------
+
+#### Clims: Current - SSP 2.6 Preds & Current - SSP 8.5 Preds (2-Panel) -----
+
+```{r}
+p_thetao_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+    pleft = gg_list_thetao[['clim_map_histclim_glorys_resamp_thetao']], 
+    pcenter = gg_list_thetao[['clim_map_ssp26_thetao']],
+    pright = gg_list_thetao[['clim_map_ssp85_thetao']]
+    ) 
+                                   
+p_thetao_glorys_ssp26_ssp85_3panel <- p_thetao_glorys_ssp26_ssp85_3panel + resize_cbar(23)
+
+### Save plot ----
+ggsave(filename = str_c('plot_thetao_glorys_ssp26_ssp85_3panel_', 
+                        params$location, "_draft_ms_fig",
+                        params$fig_out_ext), 
+       plot = p_thetao_glorys_ssp26_ssp85_3panel, 
+       # height=9,
+       width=13, bg='white',
+       path = here('figs'))
+```
+
+
+```{r}
+p_so_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+    pleft = gg_list_so[['clim_map_histclim_glorys_resamp_so']], 
+    pcenter = gg_list_so[['clim_map_ssp26_so']],
+    pright = gg_list_so[['clim_map_ssp85_so']]
+    ) 
+                                   
+p_so_glorys_ssp26_ssp85_3panel <- p_so_glorys_ssp26_ssp85_3panel + resize_cbar(23)
+
+### Save plot ----
+ggsave(filename = str_c('plot_so_glorys_ssp26_ssp85_3panel_', params$pred_model, "_", 
+                        params$location, "_draft_ms_fig",
+                        params$fig_out_ext), 
+       plot = p_so_glorys_ssp26_ssp85_3panel, 
+       # height=9,
+       width=13, bg='white',
+       path = here('figs'))
+```
+
+
+
+## Fig 2: Current Preds vs. SSP 2.6 vs SSP 8.5 - 3 Panel -----------------------------
+
+### Current vs SSP 2.6 vs SSP 8.5 Preds (3-Panel) -----
+```{r p_glorys_ssp26-3panel}
+p_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+    pleft = gg_glorys_histclim_pred, 
+    pcenter = gg_gcm_ssp26_pred,
+    pright = gg_gcm_ssp85_pred
+    ) 
+                                   
+if(params$pred_model=="growth_rate"){
+  p_glorys_ssp26_ssp85_3panel <- p_glorys_ssp26_ssp85_3panel + resize_cbar(21.5)
+} else if(params$pred_model=="CTX_rate"){
+  p_glorys_ssp26_ssp85_3panel <- p_glorys_ssp26_ssp85_3panel + resize_cbar(21)
+}
+
+### Save plot ----
+ggsave(filename = str_c('plot_glorys_ssp26_ssp85_3panel_', params$pred_model, "_", 
+                        params$location, "_draft_ms_fig",
+                        params$fig_out_ext), 
+       plot = p_glorys_ssp26_ssp85_3panel, 
+       # height=9,
+       width=13, bg='white',
+       path = here('figs'))
+```
+
+
+## Fig 3: Current Preds vs. SSP 2.6 vs SSP 8.5 - 2 Panel -----------------------------
+
+#### Diff Preds: Current - SSP 2.6 Preds & Current - SSP 8.5 Preds (2-Panel) -----
+```{r p_ssp26_ssp85_diff_btwn_ssp26_ssp85_3panel}
+
+p_ssp26_ssp85_diff_btwn_glorys_2panel <- display_multi_figs_2panel(
+    pleft = gg_diff_ssp26_glorys_pred, 
+    pright = gg_diff_ssp85_glorys_pred
+    )
+
+if(params$pred_model=="growth_rate"){
+  p_ssp26_ssp85_diff_btwn_glorys_2panel <- 
+    p_ssp26_ssp85_diff_btwn_glorys_2panel + resize_cbar(25)
+} else if(params$pred_model=="CTX_rate"){
+  p_ssp26_ssp85_diff_btwn_glorys_2panel <- 
+    p_ssp26_ssp85_diff_btwn_glorys_2panel + resize_cbar(25)
+}
+
+### Save plot ----
+ggsave(filename = str_c('plot_ssp26_ssp85_diff_btwn_glorys_2panel_', ... = 
+                        params$pred_model, "_", 
+                        params$location, "_draft_ms_fig",
+                        params$fig_out_ext), 
+       plot = p_ssp26_ssp85_diff_btwn_glorys_2panel, 
+       # height=9,
+       width=13, bg='white',
+       path = here('figs'))
+```
+
+
+## Crop Figs ----
+### Sort Files in Chron Order
+```{r}
+# create movie
+library(gtools)
+
+
+# List plots files
+flist <- list.files(here('figs'),pattern = "plot_",full.names=T)
+plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
+
+plot_files_extent <- plot_files#[grepl(p_extent, plot_files, fixed=TRUE)] 
+
+pfiles <- plot_files_extent[order(basename(plot_files_extent))]
+
+pfiles <- gtools::mixedsort(pfiles)
+
+```
+
+# Crop PNG Frames
+```{r }
+# #intermediate step to crop PNG file and reduce negative space
+
+## use crop image source function ------
+source(here('utils','crop_image.R'))
+crop_image(pfiles)
+
+```

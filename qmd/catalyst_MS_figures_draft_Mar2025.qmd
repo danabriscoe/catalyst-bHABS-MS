@@ -1,0 +1,99 @@
+---
+title: "Catalyst Manuscript: Draft Figures"
+subtitle: "Dana Briscoe"
+date: "`r Sys.Date()`"
+format:
+  html:
+    theme: flatly
+    fontsize: 20px
+    toc: true
+    toc-location: left
+    toc-expand: true	
+    number-sections: false
+    number-depth: 2
+    smooth-scroll: true
+    fig-cap-location: top
+    scrollable: true
+    grid:
+      sidebar-width: 350px
+filters:
+  - lightbox
+lightbox: 
+  match: auto
+  effect: zoom
+  desc-position: top
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning=FALSE}
+fontawesome::fa_html_dependency()
+
+library(tidyverse)
+library(ggplot2)
+library(patchwork)
+
+library(glue)
+library(here)
+```
+
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning=FALSE}
+flist = list.files(here('data', 'gg_data'), full.names = T) 
+
+lapply(flist, load, environment())
+
+```
+
+<br>
+
+**Summary:**
+Draft figures for co-author review and manuscript consideration. 
+
+<br>
+
+[*Click images to zoom in*]{style="font-size: 80%;"} <br>
+
+<br>
+
+## Manuscript Figures
+
+### Figure 1
+
+Long term climatologies of sea-surface temperature (SST) between 1993 - 2024 (A) and forecasted SST changes under IPCC RCP Scenarios 2.6 (B) and 8.5 (C). The white contour lines represent every 5 degrees °C SST. 
+
+![](images/plot_thetao_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+
+`
+
+<br>
+
+### Figure 2
+Predictive maps of *G.polynesiensis* distribution from (A) historic data and under anticipated ocean warming (B) SSP 2.6 and (C) SSP 8.5
+
+![](images/plot_thetao_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+
+<br>
+
+### Figure 3
+
+![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_growth_rate_full_draft_ms_fig.png)
+
+<br>
+
+## Supplemental Material Figures
+<br>
+
+### Figure S1. 
+Long term climatologies of sea-surface salinity (SSS) between 1993 - 2024 (A) and forecasted SST changes under IPCC RCP Scenarios 2.6 (B) and 8.5 (C). The white contour lines represent every 1 unit change in salinity. 
+
+![](images/plot_so_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+
+<br>
+
+### Figure S2. 
+
+
+

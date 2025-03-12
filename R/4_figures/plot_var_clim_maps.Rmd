@@ -6,8 +6,8 @@ output: html_document
 params:
   source: 'glorys'
   # source: 'gcm'
-  # var: 'thetao'
-  var: 'so'
+  var: 'thetao'
+  # var: 'so'
   depth: '_0m'
   scenario: 'ssp26'
   # scenario: 'ssp85'
@@ -308,14 +308,14 @@ gg_list <- list(gg_glorys_histclim_clim,
                 )
 
 
-names(gg_list) <- c(glue('clim_map_histclim_glorys_{params$var}_pos_vals'),
-                    glue('clim_map_histclim_glorys_resamp_{params$var}_pos_vals'),
-                    glue('clim_map_ssp26_{params$var}_pos_vals'),
-                    glue('clim_map_ssp85_{params$var}_pos_vals'),
+names(gg_list) <- c(glue('clim_map_histclim_glorys_{params$var}'),
+                    glue('clim_map_histclim_glorys_resamp_{params$var}'),
+                    glue('clim_map_ssp26_{params$var}'),
+                    glue('clim_map_ssp85_{params$var}'),
                     
-                    glue('clim_map_diff_ssp26_glorys_{params$var}_pos_vals'),
-                    glue('clim_map_diff_ssp85_glorys_{params$var}_pos_vals'),
-                    glue('clim_map_diff_ssp85_ssp26_{params$var}_pos_vals')
+                    glue('clim_map_diff_ssp26_glorys_{params$var}'),
+                    glue('clim_map_diff_ssp85_glorys_{params$var}'),
+                    glue('clim_map_diff_ssp85_ssp26_{params$var}')
                     
                     )
 
@@ -366,12 +366,19 @@ crop_image(pfiles)
 ## Save RData ----
 ```{r}
 ## Save rdata ---- (for ms fig formatting)
-save(
-  gg_glorys_histclim_clim, 
-  gg_glorys_histclim_resamp_clim, gg_gcm_ssp26_clim, gg_gcm_ssp85_clim,
-  gg_clim_diff_ssp26_glorys_clim, gg_clim_diff_ssp85_glorys_clim, gg_clim_diff_ssp85_ssp26_clim,
-  
-  file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}.rdata')))
+# assign(glue("gg_glorys_histclim_clim_{params$var}"), gg_glorys_histclim_clim)
+if(params$var == 'thetao'){
+  gg_list_thetao = gg_list
 
+  save(gg_list_thetao,
+    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}.rdata')))
+
+} else if(params$var == 'so') {
+  gg_list_so = gg_list
+
+  save(gg_list_so,
+    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}.rdata')))
+} 
+  
 ```
 
