@@ -322,3 +322,10 @@ get_plot <- function(data, ras, mapdata, cpal, bbox, .legend = TRUE, .contours_m
 } # end get_plot
 
 }
+
+scale_y_latitude <- function(ymin=-90, ymax=90, step=0.5, ...) {
+  ybreaks <- seq(ymin,ymax,step)
+  #   ylabels <- unlist(lapply(ybreaks, function(x) ifelse(x < 0, parse(text=paste0(x,"^o", "*S")), ifelse(x > 0, parse(text=paste0(x,"^o", "*N")),x))))
+  ylabels <- unlist(lapply(ybreaks, function(x) ifelse(x < 0, paste0(x, "°S"), ifelse(x > 0, paste0(x, "°N"),x))))
+  return(scale_y_continuous("Latitude", breaks = ybreaks, labels = ylabels, expand = c(0, 0), ...))
+}  
