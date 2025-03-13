@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 format:
   html:
     theme: flatly
+    page-layout: full
     fontsize: 20px
     toc: true
     toc-location: left
