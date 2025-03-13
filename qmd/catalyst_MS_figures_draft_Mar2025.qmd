@@ -33,19 +33,19 @@ fontawesome::fa_html_dependency()
 
 library(tidyverse)
 library(ggplot2)
-library(patchwork)
+library(fontawesome)
 
 library(glue)
 library(here)
 ```
 
 
-```{r, echo = FALSE, results='hide', message=FALSE, warning=FALSE}
-flist = list.files(here('data', 'gg_data'), full.names = T) 
+<!-- ```{r, echo = FALSE, results='hide', message=FALSE, warning=FALSE} -->
+<!-- flist = list.files(here('data', 'gg_data'), full.names = T)  -->
 
-lapply(flist, load, environment())
+<!-- lapply(flist, load, environment()) -->
 
-```
+<!-- ``` -->
 
 <br>
 
@@ -54,7 +54,7 @@ Draft figures for co-author review and manuscript consideration.
 
 <br>
 
-[*Click images to zoom in*]{style="font-size: 80%;"} <br>
+{{< fa magnifying-glass-plus >}} [*Click images to zoom view*]{style="font-size: 90%;"} <br> 
 
 <br>
 
@@ -62,38 +62,61 @@ Draft figures for co-author review and manuscript consideration.
 
 ### Figure 1
 
-Long term climatologies of sea-surface temperature (SST) between 1993 - 2024 (A) and forecasted SST changes under IPCC RCP Scenarios 2.6 (B) and 8.5 (C). The white contour lines represent every 5 degrees °C SST. 
+Long term climatologies of sea-surface temperature (SST) between (A) 1993 - 2024 and forecasted SST changes under IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 5 degrees °C SST. 
 
 ![](images/plot_thetao_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
 
-`
 
 <br>
 
 ### Figure 2
-Predictive maps of *G.polynesiensis* distribution from (A) historic data and under anticipated ocean warming (B) SSP 2.6 and (C) SSP 8.5
+Long term climatologies of sea-surface salinity (SSS) between (A) 1993 - 2024 and forecasted SSS changes under IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 1 unit change in salinity. 
 
-![](images/plot_thetao_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+![](images/plot_so_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+
 
 <br>
 
+
 ### Figure 3
+Predicted distribution of *G.polynesiensis* growth rates (div/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC RCP Scenarios (B) 2.6 and (C) 8.5.
+
+![](images/plot_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+
+<br>
+
+### Figure 4
+Spatial difference in predicted *G.polynesiensis* growth rates (div/day) between (A) IPCC RCP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC RCP Scenario 8.5 and historic data (1993 - 2024). 
 
 ![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_growth_rate_full_draft_ms_fig.png)
 
 <br>
 
-## Supplemental Material Figures
-<br>
 
-### Figure S1. 
-Long term climatologies of sea-surface salinity (SSS) between 1993 - 2024 (A) and forecasted SST changes under IPCC RCP Scenarios 2.6 (B) and 8.5 (C). The white contour lines represent every 1 unit change in salinity. 
+### Figure 5
+Predicted distribution of total *G.polynesiensis* CTX production (ng/ml/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC RCP Scenarios (B) 2.6 and (C) 8.5.
 
-![](images/plot_so_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png)
+![](images/plot_glorys_ssp26_ssp85_3panel_CTX_rate_full_draft_ms_fig.png)
 
 <br>
 
-### Figure S2. 
+### Figure 6
+Spatial difference in total predicted *G.polynesiensis* CTX production (ng/ml/day) between (A) IPCC RCP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC RCP Scenario 8.5 and historic data (1993 - 2024). 
+
+![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_CTX_rate_full_draft_ms_fig.png)
+
+<br>
+
+
+<!-- ## Supplemental Material Figures -->
+<!-- <br> -->
+
+<!-- ### Figure S1.  -->
+
+
+<br>
+
+
 
 
 
