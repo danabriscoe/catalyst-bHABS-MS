@@ -2,25 +2,44 @@
 code for Catalyst bHABs MS
 
 
+### qmd extensions:
+
+```bash
+quarto install extension quarto-ext/fontawesome
+```
+
+<br>
+
 ### Checklist for GLORYS data sets:
 
 ### Params
-Spatial extent: full
-Bbox: c(120, 210, -60, 60)
-Depth: 0m
+- Spatial extent: full
+- Bbox: c(120, 210, -60, 60)
+- Depth: 0m
 
-Historic period ref (Jan 1993 - Dec 2024)
+- Historic period ref (Jan 1993 - Dec 2024)
 
 
-### Checklist for cmip 6 data sets (jan 2025)
-source: [https://psl.noaa.gov/ipcc/cmip6/](https://psl.noaa.gov/ipcc/cmip6/)
+<br>
+
+
+### Checklist for cmip 6 data sets (downloaded Jan 2025)
+
+- Source: [https://psl.noaa.gov/ipcc/cmip6/](https://psl.noaa.gov/ipcc/cmip6/)
+
+<br>
+
 
 ### Params
-Spatial extent: full
-Bbox: c(120, 210, -60, 60)
-Depth: 0m
+- Spatial extent: full
+- Bbox: c(120, 210, -60, 60)
+- Depth: 0m
 
-Historic period ref (1985 - 2014)
+- Historic period ref (1985 - 2014)
+
+
+<br>
+
 
 ### List
 
@@ -42,6 +61,8 @@ Historic period ref (1985 - 2014)
 - [x]  SSP 8.5 Std Ann Ensemble
 
 
+<br>
+
 ### Checklist for model fits & predictions (feb 2025)
 
 **Growth Rate**
@@ -60,8 +81,10 @@ Historic period ref (1985 - 2014)
 - [x]  GCM SSP 8.5
 
 
+<br>
 
-### Checklist for pred diffs (mar 2025)
+
+### Checklist for pred diffs (Mar 2025)
 
 **Growth Rate**
 
