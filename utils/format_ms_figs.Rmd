@@ -9,8 +9,8 @@ params:
   # location: 'nz'
   # location: 'japan'
   location: 'full'
-  # pred_model: 'growth_rate'
-  pred_model: 'CTX_rate'
+  pred_model: 'growth_rate'
+  # pred_model: 'CTX_rate'
   # out_dir_plots: '../figures/final_figs'
   contour_labs: TRUE
   fig_out_ext: '.png'

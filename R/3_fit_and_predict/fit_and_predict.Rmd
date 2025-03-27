@@ -200,10 +200,10 @@ preds_list <-
     
   } else if(params$location == 'full'){
     # predsurfs[predsurfs[['salinity']] < 20] <- NA
-    predsurfs[predsurfs[['temp']] < 17.5] <- NA
-    predsurfs[predsurfs[['temp']] > 32.5] <- NA
-    predsurfs[predsurfs[['salinity']] < 20] <- NA
-    predsurfs[predsurfs[['salinity']] > 40] <- NA
+    predsurfs[predsurfs[['temp']] <= 17.5] <- NA
+    predsurfs[predsurfs[['temp']] >= 30] <- NA
+    predsurfs[predsurfs[['salinity']] <= 15] <- NA
+    predsurfs[predsurfs[['salinity']] >= 45] <- NA
   }
   
   # if(params$pred_model=='CTX_rate'){  # dkbcommented out (mar 2025 bc using 17.5-32.5; 20-40 ranges for both growth rates and ctx rates)
