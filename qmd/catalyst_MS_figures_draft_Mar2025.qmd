@@ -63,48 +63,48 @@ Draft figures for co-author review and manuscript consideration.
 
 ### Figure 1
 
-Long term climatologies of sea-surface temperature (SST) between (A) 1993 - 2024, and forecasted SST changes under IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 5 degrees °C SST. 
+Long term climatologies of sea-surface temperature (SST) between (A) 1993 - 2024, and forecasted SST changes under IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 5 degrees °C SST. 
 
-![](images/plot_thetao_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 1. Long term climatologies of sea-surface temperature (SST) between (A) 1993 - 2024, and forecasted SST changes under IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 5 degrees °C SST."}
+![](images/plot_thetao_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 1. Long term climatologies of sea-surface temperature (SST) between (A) 1993 - 2024, and forecasted SST changes under IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 5 degrees °C SST."}
 
 
 <br>
 
 ### Figure 2
-Long term climatologies of sea-surface salinity (SSS) between (A) 1993 - 2024, and forecasted SSS changes under IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 1 unit change in salinity. 
+Long term climatologies of sea-surface salinity (SSS) between (A) 1993 - 2024, and forecasted SSS changes under IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 1 unit change in salinity. 
 
-![](images/plot_so_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 2. Long term climatologies of sea-surface salinity (SSS) between (A) 1993 - 2024, and forecasted SSS changes under IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 1 unit change in salinity."} 
+![](images/plot_so_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 2. Long term climatologies of sea-surface salinity (SSS) between (A) 1993 - 2024, and forecasted SSS changes under IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 1 unit change in salinity."} 
 
 
 <br>
 
 
 ### Figure 3
-Predicted distribution of *G.polynesiensis* growth rates (div/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted growth rates.
+Predicted distribution of *G.polynesiensis* growth rates (div/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted growth rates.
 
-![](images/plot_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 3. Predicted distribution of *G.polynesiensis* growth rates (div/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted growth rates."}
+![](images/plot_glorys_ssp26_ssp85_3panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 3. Predicted distribution of *G.polynesiensis* growth rates (div/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted growth rates."}
 
 <br>
 
 ### Figure 4
-Spatial difference in predicted *G.polynesiensis* growth rates (div/day) between (A) IPCC RCP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC RCP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted growth rates. 
+Spatial difference in predicted *G.polynesiensis* growth rates (div/day) between (A) IPCC SSP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC SSP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted growth rates. 
 
-![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 4. Spatial difference in predicted *G.polynesiensis* growth rates (div/day) between (A) IPCC RCP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC RCP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted growth rates."}
+![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_growth_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 4. Spatial difference in predicted *G.polynesiensis* growth rates (div/day) between (A) IPCC SSP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC SSP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted growth rates."}
 
 <br>
 
 
 ### Figure 5
-Predicted distribution of total *G.polynesiensis* CTX production (ng/ml/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted CTX production rates.
+Predicted distribution of total *G.polynesiensis* CTX production (ng/ml/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted CTX production rates.
 
-![](images/plot_glorys_ssp26_ssp85_3panel_CTX_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 5. Predicted distribution of total *G.polynesiensis* CTX production (ng/ml/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC RCP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted CTX production rates."}
+![](images/plot_glorys_ssp26_ssp85_3panel_CTX_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 5. Predicted distribution of total *G.polynesiensis* CTX production (ng/ml/day) during (A) 1993 - 2024, and under anticipated ocean warming based on IPCC SSP Scenarios (B) 2.6 and (C) 8.5. The white contour lines represent every 0.1 unit change in predicted CTX production rates."}
 
 <br>
 
 ### Figure 6
-Spatial difference in total predicted *G.polynesiensis* CTX production (ng/ml/day) between (A) IPCC RCP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC RCP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted CTX production rates.
+Spatial difference in total predicted *G.polynesiensis* CTX production (ng/ml/day) between (A) IPCC SSP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC SSP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted CTX production rates.
 
-![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_CTX_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 6. Spatial difference in total predicted *G.polynesiensis* CTX production (ng/ml/day) between (A) IPCC RCP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC RCP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted CTX production rates."} 
+![](images/plot_ssp26_ssp85_diff_btwn_glorys_2panel_CTX_rate_full_draft_ms_fig.png){group="ms-figs" description="Figure 6. Spatial difference in total predicted *G.polynesiensis* CTX production (ng/ml/day) between (A) IPCC SSP Scenario 2.6 and historic data (1993 - 2024) and (B) IPCC SSP Scenario 8.5 and historic data (1993 - 2024). The white contour lines represent every 0.1 unit change in predicted CTX production rates."} 
 
 <br>
 

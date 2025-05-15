@@ -1,0 +1,4 @@
+- source: catalyst_MS_figures_draft_Mar2025.qmd
+  quarto-pub:
+    - id: 6a6208b8-6044-4182-b8bb-a65764dfdd9b
+      url: 'https://dbriscoe.quarto.pub/catalyst-bhabs-ms-figs'
