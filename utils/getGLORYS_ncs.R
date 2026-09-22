@@ -29,8 +29,8 @@ lapply(pkgs, library, character.only = TRUE)
 
 
 ## Source helper functions ----
-# source(here('code', '00_automate_EOV_helper_functions.R')) #### UPDATE ME!!!!
-source(file.path(here() %>% dirname(), 'cc-stretch-get-ncdf','code','00_automate_EOV_helper_functions.R')) # UPDATE ME!
+source(here('code', '00_automate_EOV_helper_functions.R')) #### UPDATE ME!!!!
+# source(file.path(here() %>% dirname(), 'cc-stretch-get-ncdf','code','00_automate_EOV_helper_functions.R')) # UPDATE ME!
 
 # If your are using Rstudio, please follow the article to add your path to the Copernicus Marine Toolbox
 path_copernicus_marine_toolbox = "/Users/briscoedk/opt/anaconda3/envs/R_env/bin/copernicusmarine"
@@ -62,8 +62,12 @@ varnames <- c("so", "thetao")
 # date_min = ymd(19930101) # end_date ---
 # date_max = ymd(20210701) # end date
 
-date_min = ymd(20241101) # end_date ---
-date_max = ymd(20241201) # end date
+# date_min = ymd(20241101) # end_date ---
+# date_max = ymd(20241201) # end date
+
+date_min = ymd(20241101) # end_date --- dkb updated: 21 sept 2026
+date_max = ymd(20260901) # end date
+
 
 dates <- seq.Date(date_min, date_max, by = "1 month")
 
@@ -71,9 +75,9 @@ dates <- seq.Date(date_min, date_max, by = "1 month")
 lon = list(120, 210)  # lon_min, lon_max
 # lat = list(25, 50) # lat_min, lat_max
 lat = list(-60, 60) # lat_min, lat_max
-depth = list(0.49, 155.8507) # depth_min, depth_max
-
-
+# depth = list(0.49, 155.8507) # depth_min, depth_max
+# depths = list(0.49, 155.8507) # depth_min, depth_max -- ## dkb updated 21 sept 2026
+depths = list(0.49402499198913574,155.85069274902344) # depth_min, depth_max -- ## dkb updated 21 sept 2026
 
 
 for (i in 1:length(dates)) {
@@ -94,8 +98,28 @@ for (i in 1:length(dates)) {
 }
 
 
-
-
+# ## dkb updated 21 sept 2026 -- copied/pasted directly from 'cc-stretch-get-netcdf/get_GLORYS.R'
+# tstep = 'monthly'
+# 
+# for (i in 1:length(dates)) {
+#   tryCatch({
+#     getNCDF_glorys(productId = productId,
+#                    serviceId = serviceId,
+#                    varnames = varnames,
+#                    lon = lon,  # lon_min, lon_max
+#                    lat = lat, # lat_min, lat_max
+#                    dt = dates[i],
+#                    depth = depths,
+#                    tstep = tstep,
+#                    ncpath = ncpath
+#     )
+#   }, error = function(e){
+#     message('Caught an error!')
+#     print(e)
+#   }
+#   )
+# }
+# 
 
 
 # 
