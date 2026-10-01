@@ -8,6 +8,7 @@
 # author: d k briscoe
 # 
 # date: jan 2025
+# updated sept 2026 for 2025 glorys data incl
 # __________________________________________________________________________________________________
 
 ## Load libraries ----

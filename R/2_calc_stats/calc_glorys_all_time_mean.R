@@ -39,7 +39,7 @@ spat_rast_thetao_mean <- as(stack_thetao, "SpatRaster")
 
 ## save 
 grd_dir = here('data','processed')
-fname = glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_thetao{params$depth}.grd')
+fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_thetao{params$depth}.grd')
 # terra::writeRaster(spat_rast_thetao_mean, file = str_c(grd_dir, fname, sep='/'), overwrite = T) # strange min/max vals when saving as spatras. avoid and just use raster
 terra::writeRaster(stack_thetao, file = str_c(grd_dir, fname, sep='/'), overwrite = T)
 
@@ -54,7 +54,7 @@ spat_rast_so_mean <- as(stack_so, "SpatRaster")
 
 ## save 
 grd_dir = here('data','processed')
-fname = glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_so{params$depth}.grd')
+fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_so{params$depth}.grd')
 # terra::writeRaster(spat_rast_so_mean, file = str_c(grd_dir, fname, sep='/'), overwrite = T)
 terra::writeRaster(stack_so, file = str_c(grd_dir, fname, sep='/'), overwrite = T)
 
