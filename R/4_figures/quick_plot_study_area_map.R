@@ -122,7 +122,8 @@ cpal <- smooth_rainbow(
 ## Plot settings ----
 bbox <- tibble(
   xmin = 120,
-  xmax = 210,
+  # xmax = 210,
+  xmax = 220,
   ymin = -60,
   ymax = 60,
   xstep = 10,

@@ -29,14 +29,15 @@ lapply(pkgs, library, character.only = TRUE)
 
 
 ## Source helper functions ----
-source(here('code', '00_automate_EOV_helper_functions.R')) #### UPDATE ME!!!!
+# source(here('code', '00_automate_EOV_helper_functions.R')) #### UPDATE ME!!!!
 # source(file.path(here() %>% dirname(), 'cc-stretch-get-ncdf','code','00_automate_EOV_helper_functions.R')) # UPDATE ME!
+source(here('utils', '00_catalyst_helper_functions_MS.R')) #### UPDATE ME!!!!
 
 # If your are using Rstudio, please follow the article to add your path to the Copernicus Marine Toolbox
 path_copernicus_marine_toolbox = "/Users/briscoedk/opt/anaconda3/envs/R_env/bin/copernicusmarine"
 
 ## Set path for glorys downloads (special location) ----
-ncpath <- "~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys" # NOTE, cm api doesn't like spaces! 
+ncpath <- "~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon" # NOTE, cm api doesn't like spaces! 
 
 ## Set Copernicus credentials 
 glorys_key <- invisible(config::get(file = "~/github/catalyst-bHABs/utils/glorys_config.yml") )
@@ -48,7 +49,8 @@ glorys_key <- invisible(config::get(file = "~/github/catalyst-bHABs/utils/glorys
 
 # Product ID
 # productId = "cmems_mod_glo_phy_my_0.083deg_P1M-m" # use this up to 2021-06-01
-productId = "cmems_mod_glo_phy_myint_0.083deg_P1M-m" # use this from 2021-07-01
+# productId = "cmems_mod_glo_phy_myint_0.083deg_P1M-m" # use this from 2021-07-01
+productId = "cmems_mod_glo_phy_my_0.083deg_P1M-m" # as of sept 2026, this has 01/1993 - 05/2026
 
 # Service ID for the Motu request
 serviceId = "GLOBAL_MULTIYEAR_PHY_001_030"
@@ -59,25 +61,28 @@ serviceId = "GLOBAL_MULTIYEAR_PHY_001_030"
 varnames <- c("so", "thetao")
 
 # Time range
-# date_min = ymd(19930101) # end_date ---
+date_min = ymd(19930101) # end_date ---
 # date_max = ymd(20210701) # end date
 
 # date_min = ymd(20241101) # end_date ---
 # date_max = ymd(20241201) # end date
 
-date_min = ymd(20241101) # end_date --- dkb updated: 21 sept 2026
-date_max = ymd(20260901) # end date
+# date_min = ymd(20241101) # end_date --- dkb updated: 21 sept 2026
+date_max = ymd(20251201) # end date
 
 
 dates <- seq.Date(date_min, date_max, by = "1 month")
 
 # Geographic area and depth level 
-lon = list(120, 210)  # lon_min, lon_max
-# lat = list(25, 50) # lat_min, lat_max
+# lon = list(120, 210)  # lon_min, lon_max
+lon = list(120, 220)  # lon_min, lon_max
+
 lat = list(-60, 60) # lat_min, lat_max
+
 # depth = list(0.49, 155.8507) # depth_min, depth_max
 # depths = list(0.49, 155.8507) # depth_min, depth_max -- ## dkb updated 21 sept 2026
-depths = list(0.49402499198913574,155.85069274902344) # depth_min, depth_max -- ## dkb updated 21 sept 2026
+# depths = list(0.49402499198913574,155.85069274902344) # depth_min, depth_max -- ## dkb updated 21 sept 2026
+depths = list(0.49402499198913574,0.49402499198913574) # depth_min, depth_max -- ## dkb updated 21 sept 2026
 
 
 for (i in 1:length(dates)) {
@@ -87,9 +92,13 @@ for (i in 1:length(dates)) {
                        varnames = varnames,
                        lon = lon,  # lon_min, lon_max
                        lat = lat, # lat_min, lat_max
+                   
+                       depth = depths,
+                   
                        dt = dates[i],
                        ncpath = ncpath
     )
+    
   }, error = function(e){
     message('Caught an error!')
     print(e)

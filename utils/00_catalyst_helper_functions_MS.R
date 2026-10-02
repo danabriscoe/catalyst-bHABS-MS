@@ -15,6 +15,7 @@ get_fdates <- function(ncsIn, pluck_idx){
 getNCDF_glorys <- function(productId, 
                                serviceId,
                                varnames,
+                              depth,
                                lon, lat, dt,
                                ncpath) {
   
@@ -28,7 +29,9 @@ getNCDF_glorys <- function(productId,
                       "-x", lon[1], "-X", lon[2],                  
                       "-y", lat[1], "-Y", lat[2],
                       "-t", dt, "-T", dt,
-                      # "-z", depth[1], "-Z", depth[2],                    
+                      
+                      "-z", depth[1], "-Z", depth[2],
+                      
                       "-v", varnames[1], "-v", varnames[2], 
                       "-o", ncpath, "-f", out_name, 
                       "--force-download", sep = " ", "--username", glorys_key$user, "--password", glorys_key$pwd)
@@ -46,6 +49,7 @@ getNCDF_glorys <- function(productId,
   }
   
 }
+
 
 
 # get predDates
