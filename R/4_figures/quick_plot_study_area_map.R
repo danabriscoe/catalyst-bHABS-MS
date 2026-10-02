@@ -160,8 +160,10 @@ gp <- ggplot() +
     colours = cpal,
     breaks = seq(-2, 32, 2),
     guide = guide_colourbar(
-      barwidth = 1.5,
-      barheight = 38,
+      # barwidth = 1.5,
+      # barheight = 38,
+      barwidth = 1.0,
+      barheight = 20,
       frame.colour = "gray20",
       ticks.colour = "gray30"
     ),
@@ -276,6 +278,101 @@ source(
 )
 
 crop_image(filenm)
+
+
+## Add Gambierdiscus polynesiensis locations ----
+
+# Read occurrence locations
+gamb_locs <- read.csv(here::here(
+                      "data", "raw", "gam_locations",
+  "GambMapData_coords_only.csv")
+) %>%
+  mutate(
+    lon_360 = if_else(
+      lon < 0,
+      lon + 360,
+      lon
+    )
+  )
+
+
+## Add locations to existing SST map ----
+
+gp_w_locs <- gp +
+  
+  geom_point(
+    data = gamb_locs,
+    aes(
+      x = lon_360,
+      y = lat
+    ),
+    inherit.aes = FALSE,
+    shape = 21,
+    size = 4,
+    stroke = 0.8,
+    fill = "white",
+    colour = "black"
+  ) +
+  
+  ## Labels
+  labs(
+    caption = str_c(
+      format(
+        g_dates[1],
+        "%B %Y "
+      ), 
+      "SST ",
+      "with G.polynesiensis locations (white circles)"
+    )
+  )
+
+
+## Preview ----
+gp_w_locs
+
+
+
+## save gp with locations
+filenm_gp_locs <- here(
+  "qmd",
+  "images",
+  glue(
+    "study_area_with_sst_GambMap_Data.png"
+  )
+)
+
+# ggsave(
+#   gp_w_locs,
+#   file = filenm_gp_locs,
+#   width = 18,
+#   # height = 8.5,   # comment out height to get auto aspect ratio set!
+#   bg = 'white'
+# )
+
+# Save only — DON'T crop
+ggsave(
+  gp_w_locs,
+  file= filenm_gp_locs,
+  width = 14,
+  height = 10,
+  units = "in",
+  dpi = 300,
+  bg = "white"
+)
+
+# Then separately run your normal cropped version
+
+
+## Crop image ----
+source(
+  here::here(
+    'utils',
+    'crop_image.R'
+  )
+)
+
+crop_image(filenm_gp_locs)
+
 
 ### DKB UPDATED: 2 Oct 2026 ---- deal with low res 'world' coastline issue
 
