@@ -110,7 +110,7 @@ add_border <- function(size=2){
   )
 }
 
-format_subtitle <- function(size="14"){
+format_subtitle <- function(size=14){
   list(
     theme(plot.subtitle=element_text(size=size, hjust=0.5, face="bold", color="black"))
   )
