@@ -75,7 +75,7 @@ dates <- seq.Date(date_min, date_max, by = "1 month")
 
 # Geographic area and depth level 
 # lon = list(120, 210)  # lon_min, lon_max
-lon = list(120, 220)  # lon_min, lon_max
+lon = list(120, 260)  # lon_min, lon_max
 
 lat = list(-60, 60) # lat_min, lat_max
 
