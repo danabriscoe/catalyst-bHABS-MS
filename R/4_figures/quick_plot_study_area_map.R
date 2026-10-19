@@ -35,7 +35,8 @@ source(
 
 
 ## Set fpath, pull temp files ----
-ncIn <- "~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/cmems_glorys_global_multiyear_phy_full_2024-09-01_catalyst.nc"
+# ncIn <- "~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/cmems_glorys_global_multiyear_phy_full_2024-09-01_catalyst.nc"
+ncIn <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/cmems_glorys_global_multiyear_phy_full_2025-12-01_catalyst.nc'
 
 
 ## INTERIM: Load as raster ----
@@ -48,7 +49,8 @@ ras <- raster(
 ## Assign ras name == date ----
 g_dates <- get_fdates(
   ncsIn = ncIn,
-  pluck_idx = 11
+  # pluck_idx = 11
+  pluck_idx = 12  # for expanded lons fnames
 ) %>%
   as.Date()
 
@@ -101,7 +103,7 @@ ggplot() +
     linewidth = 0.15
   ) +
   coord_sf(
-    xlim = c(120, 210),
+    xlim = c(120, 260),
     ylim = c(-60, 60),
     expand = FALSE,
     crs = sf::st_crs(4326)
@@ -123,7 +125,7 @@ cpal <- smooth_rainbow(
 bbox <- tibble(
   xmin = 120,
   # xmax = 210,
-  xmax = 220,
+  xmax = 260,
   ymin = -60,
   ymax = 60,
   xstep = 10,
