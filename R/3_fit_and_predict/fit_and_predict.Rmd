@@ -11,14 +11,14 @@ params:
   depth: '_0m'
   # # scenario: 'ssp26'
   # scenario: 'ssp85'
-  scenario: 'ssp245'
+  scenario: 'ssp126'
   # scenario: 'ssp585'
   type: 'histclim'
   # stat: !r NULL
   stat: 'all_time_mean'
   location: 'full'
-  pred_model: 'growth_rate'
-  # pred_model: 'CTX_rate'
+  # pred_model: 'growth_rate'
+  pred_model: 'CTX_rate'
   make_pos: TRUE
 
 ---
@@ -104,7 +104,8 @@ if(params$pred_model == 'growth_rate'){
 if(params$source=='glorys' & is.null(params$stat)){
   ## Pull all var files
   # fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/grd'
-    fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/grd'
+    fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/grd' # for expanded lons
+    
   ## Get list of .grd files
   flist <- list.files(fpath, pattern = "grd$", full.names=T)
   ## Pull all files by location, var, and type
