@@ -29,7 +29,7 @@ source(here('utils','00_catalyst_helper_functions_MS.R'))
 
 # Set save output dir ----
 # grd_dir = here('data','processed')
-grd_dir = here('data','processed', 'expanded_lons')
+grd_dir = here('data','processed', 'expanded_lon')
 
 
 
