@@ -4,13 +4,15 @@ author: "Dana K Briscoe"
 date: "`r Sys.Date()`"
 output: html_document
 params:
-  source: 'glorys'
-  # source: 'gcm'
+  # source: 'glorys'
+  source: 'gcm'
   var: 'thetao'
   # var: 'so'
   depth: '_0m'
-  scenario: 'ssp26'
+  # # scenario: 'ssp26'
   # scenario: 'ssp85'
+  # scenario: 'ssp245'
+  # scenario: 'ssp585'
   type: 'histclim'
   # stat: !r NULL
   stat: 'all_time_mean'
@@ -130,11 +132,17 @@ if(params$source=='glorys' & is.null(params$stat)){
 
   
 } else if(params$source=='gcm'){
-  fpath <- here("data","processed")
+  # fpath <- here("data","processed")
+  fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/gcm_data/bio_oracle_gcm/processed'
   ## Get list of .grd files
   flist <- list.files(fpath, pattern = "grd$", full.names=T)
   ## Pull all files by location, var, and type under each RCP or SSP scenario
-  varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*",params$depth,")(?=.*",params$location,")(?=.*",params$scenario,")(?=.*",params$type,")"), 
+  varfiles <- flist %>% 
+    # imap(., ~ .x[grepl(str_c("(?=.*",params$depth,")(?=.*",params$location,")(?=.*",params$scenario,")(?=.*",params$type,")"), 
+    #                                        .x, 
+    #                                        perl = TRUE)]) %>% 
+    #                                 unlist()
+        imap(., ~ .x[grepl(params$scenario, 
                                            .x, 
                                            perl = TRUE)]) %>% 
                                     unlist()
@@ -155,7 +163,8 @@ if(params$source=='glorys' & is.null(params$stat)){
     dates <- getPredDates(x=varfiles, idx = 8)
   
 } else if(params$source=='gcm'){
-  dates <- str_c(getPredDates(x=varfiles, 6), "_", getPredDates(x=varfiles, 7))[1]
+  # dates <- str_c(getPredDates(x=varfiles, 6), "_", getPredDates(x=varfiles, 7))[1]
+  dates <- str_c(getPredDates(x=varfiles, 9), "_", getPredDates(x=varfiles, 10))[1] # for bio oracle
 }  
 ```
 
@@ -255,7 +264,8 @@ if(params$source == "glorys"){
     pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}_{params$stat}")
   }
 } else if (params$source == "gcm"){
-  pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
+  # pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
+    pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}") # bio oracle
 } 
   
 print(str_c('now saving pred list: ', pred_fname))  
