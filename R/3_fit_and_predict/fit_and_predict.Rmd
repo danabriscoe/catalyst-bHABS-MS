@@ -103,7 +103,8 @@ if(params$pred_model == 'growth_rate'){
 ## Set filepaths -----
 if(params$source=='glorys' & is.null(params$stat)){
   ## Pull all var files
-  fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/grd'
+  # fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/grd'
+    fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/grd'
   ## Get list of .grd files
   flist <- list.files(fpath, pattern = "grd$", full.names=T)
   ## Pull all files by location, var, and type
@@ -113,7 +114,8 @@ if(params$source=='glorys' & is.null(params$stat)){
                                     unlist()
   
 } else if(params$source=='glorys' & !is.null(params$stat)){
-  fpath <- here("data","processed")
+  # fpath <- here("data","processed")
+   fpath <- here::here("data","processed", "expanded_lon")
   flist <- list.files(fpath, pattern = "grd$", full.names=T)
   
   varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*", params$depth,")(?=.*",params$location,")(?=.*",params$stat,")"), 
@@ -122,7 +124,8 @@ if(params$source=='glorys' & is.null(params$stat)){
                                     unlist()
   
 } else if(params$source=='glorys' & params$stat == "all_time_mean"){
-  fpath <- here("data","processed")
+  # fpath <- here("data","processed")
+  fpath <- here("data","processed, 'expanded_lon")
   flist <- list.files(fpath, pattern = "grd$", full.names=T)
   
   varfiles <- flist %>% imap(., ~ .x[grepl(str_c("(?=.*", params$depth,")(?=.*",params$location,")(?=.*",params$stat,")"), 
@@ -261,7 +264,7 @@ if(params$source == "glorys"){
   if(is.null(params$stat)){
     pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}")
   } else if(params$stat == "all_time_mean"){
-    pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}_{params$stat}")
+    pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}_{params$stat}_expanded_lon")
   }
 } else if (params$source == "gcm"){
   # pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
