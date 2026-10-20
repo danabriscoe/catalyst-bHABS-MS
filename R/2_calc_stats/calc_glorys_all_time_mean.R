@@ -10,6 +10,10 @@
 # author: d k briscoe
 # 
 # date: feb 2025
+# updated: oct 2026
+#
+## dkb note (oct 2026): how is this different from 'calc_glorys_stats' ????
+#
 # __________________________________________________________________________________________________
 
 
@@ -22,7 +26,11 @@ library(here)
 params <- tibble(depth = "_0m",
                  location = "full")
 
-fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/grd'
+# fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/grd'
+fpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/grd'
+
+grd_dir = here('data','processed', 'expanded_lon')
+
 ## Get list of .grd files
 flist <- list.files(fpath, pattern = "grd$", full.names=T)
 ## Pull all files by location, var, and type
@@ -38,8 +46,12 @@ stack_thetao <- raster::stack(fl_thetao) %>% calc(., fun = mean, na.rm = T)
 spat_rast_thetao_mean <- as(stack_thetao, "SpatRaster")
 
 ## save 
-grd_dir = here('data','processed')
-fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_thetao{params$depth}.grd')
+# grd_dir = here('data','processed')
+# fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_thetao{params$depth}.grd')
+grd_dir = here('data','processed', 'expanded_lon')
+fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2025-12-31_thetao{params$depth}_expanded_lon.grd')
+
+
 # terra::writeRaster(spat_rast_thetao_mean, file = str_c(grd_dir, fname, sep='/'), overwrite = T) # strange min/max vals when saving as spatras. avoid and just use raster
 terra::writeRaster(stack_thetao, file = str_c(grd_dir, fname, sep='/'), overwrite = T)
 
@@ -53,8 +65,12 @@ stack_so <- raster::stack(fl_so) %>% calc(., fun = mean, na.rm = T)
 spat_rast_so_mean <- as(stack_so, "SpatRaster")
 
 ## save 
-grd_dir = here('data','processed')
-fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_so{params$depth}.grd')
+# grd_dir = here('data','processed')
+# fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2024-12-31_so{params$depth}.grd')
+
+grd_dir = here('data','processed', 'expanded_lon')
+fname = glue::glue('glorys_all_time_mean_ras_{params$location}_1993-01-01_2025-12-31_so{params$depth}_expanded_lon.grd')
+
 # terra::writeRaster(spat_rast_so_mean, file = str_c(grd_dir, fname, sep='/'), overwrite = T)
 terra::writeRaster(stack_so, file = str_c(grd_dir, fname, sep='/'), overwrite = T)
 
