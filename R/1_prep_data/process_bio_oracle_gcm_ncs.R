@@ -28,15 +28,19 @@ source(here('utils','00_catalyst_helper_functions_MS.R'))
 
 # Set paths ----
 # ncpath
-ncpath <- here('data','raw','gcms','cmip6', 'ann')
-# ncpath <- here('data','raw','gcms','cmip6', 'stdann')
+# ncpath <- here('data','raw','gcms','cmip6', 'ann')
+# # ncpath <- here('data','raw','gcms','cmip6', 'stdann')
 
+fpath <- ncpath <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/gcm_data/bio_oracle_gcm/interim'
 # output dir ----
-grd_dir = here('data','processed')
+grd_dir = '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/gcm_data/bio_oracle_gcm/processed'
 
 ## Set variables ----
-locations = c('japan', 'nz', 'full') # add full = everything in between japan & nz
-# locations = c('full') # for ms use full = everything in between japan & nz
+# locations = c('japan', 'nz', 'full') # add full = everything in between japan & nz
+# # locations = c('full') # for ms use full = everything in between japan & nz
+
+# new patthern for bio oracle clims: .tif
+locations = '.tif'
 
 ## Get files ----
 # # list files by location: japan, nz, and full
@@ -44,22 +48,31 @@ locations = c('japan', 'nz', 'full') # add full = everything in between japan & 
 # names(nc_list) <- locations
 
 # For ms, prob just want 'full' location = #3
-nc_list <- lapply(3, function(x) {list.files(ncpath, pattern = locations[x], full.names=T)})
-names(nc_list) <- locations[3]
+# nc_list <- lapply(3, function(x) {list.files(ncpath, pattern = locations[x], full.names=T)})
+# names(nc_list) <- locations[3]
+
+nc_list <- lapply(1, function(x) {list.files(ncpath, pattern = locations[x], full.names=T)})
+names(nc_list) <- locations[1]
 
 
 ## Process ncs ----
-# 1. RCP Scenario: 8.5 ----
-# * Full ---
-## 1.1 Full -  Histclims RCP 8.5----
-full_ssp_histclim <- process_gcm_ncs(nclist=nclist, location='full', varname='histclim', ann_type = "ann")
+# # 1. RCP Scenario: 8.5 ----
+# # * Full ---
+# ## 1.1 Full -  Histclims RCP 8.5----
+# full_ssp_histclim <- process_gcm_ncs(nclist=nclist, location='full', varname='histclim', ann_type = "ann")
+# names(full_ssp_histclim)
+# save_as_grd(var_name = 'full_ssp_histclim', fpath = grd_dir, nc_source = 'gcm')
+# 
+# ## 1.2 Full - Anomalies RCP.8.5 ----
+# full_ssp_anomaly <- process_gcm_ncs(nclist, location='full', varname='anomaly', ann_type = "ann")
+# names(full_ssp_anomaly)
+# save_as_grd(var_name = 'full_ssp_anomaly', fpath = grd_dir, nc_source = 'gcm')
+
+
+full_ssp_histclim <- process_gcm_tifs(nclist=nclist, location='.tif')
+
 names(full_ssp_histclim)
+
 save_as_grd(var_name = 'full_ssp_histclim', fpath = grd_dir, nc_source = 'gcm')
-
-## 1.2 Full - Anomalies RCP.8.5 ----
-full_ssp_anomaly <- process_gcm_ncs(nclist, location='full', varname='anomaly', ann_type = "ann")
-names(full_ssp_anomaly)
-save_as_grd(var_name = 'full_ssp_anomaly', fpath = grd_dir, nc_source = 'gcm')
-
 
 ## fin --
