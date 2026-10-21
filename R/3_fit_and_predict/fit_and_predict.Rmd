@@ -11,8 +11,8 @@ params:
   depth: '_0m'
   # # scenario: 'ssp26'
   # scenario: 'ssp85'
-  scenario: 'ssp126'
-  # scenario: 'ssp585'
+  # scenario: 'ssp126'
+  scenario: 'ssp585'
   type: 'histclim'
   # stat: !r NULL
   stat: 'all_time_mean'
@@ -280,7 +280,7 @@ print(str_c('now saving pred list: ', pred_fname))
 
 ```{r}
 # f = here('data', 'preds', str_c(pred_fname, '.rds'))
-f = here('data', 'preds', str_c(pred_fname, '.rdata'))
+f = here('data', 'preds', 'expanded_lon', str_c(pred_fname, '.rdata'))
 save(preds_list, file = f)
 
 ```
