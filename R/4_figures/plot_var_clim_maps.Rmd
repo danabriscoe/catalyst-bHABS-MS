@@ -6,8 +6,8 @@ output: html_document
 params:
   source: 'glorys'
   # source: 'gcm'
-  var: 'thetao'
-  # var: 'so'
+  # var: 'thetao'
+  var: 'so'
   depth: '_0m'
     # scenario: 'ssp26'
     # scenario: 'ssp85'
@@ -735,13 +735,13 @@ if(params$var == 'thetao'){
   gg_list_thetao = gg_list
 
   save(gg_list_thetao,
-    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}_expanded_lon.rdata')))
+    file = here('data', 'gg_data', 'expanded_lon', glue('gg_clims_and_clim_diffs_{params$var}_expanded_lon.rdata')))
 
 } else if(params$var == 'so') {
   gg_list_so = gg_list
 
   save(gg_list_so,
-    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}_expanded_lon.rdata')))
+    file = here('data', 'gg_data', 'expanded_lon', glue('gg_clims_and_clim_diffs_{params$var}_expanded_lon.rdata')))
 } 
   
 ```
