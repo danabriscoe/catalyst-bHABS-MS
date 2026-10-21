@@ -9,7 +9,9 @@ params:
   var: 'thetao'
   # var: 'so'
   depth: '_0m'
-  scenario: 'ssp26'
+  # scenario: 'ssp26'
+  # scenario: 'ssp85'
+  scenario: 'ssp126'
   # scenario: 'ssp85'
   type: 'histclim'
   # stat: !r NULL
@@ -81,19 +83,36 @@ params$spp <- 'G.polynesiensis'
 ```
 
 ```{r}
+# if(is.null(params$stat)){
+#   pred_ras_histclim <- loadRData(here('data', 'preds',
+#                                    glue('preds_df_list_{params$pred_model}_histclim_glorys.rdata'))) |> stack()
+# } else if (params$stat == "all_time_mean"){
+#   pred_ras_histclim <- loadRData(here('data', 'preds',
+#                                    glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}.rdata'))) |> stack()
+# }
+# 
+# pred_ras_ssp26 <- loadRData(here('data', 'preds',
+#                                    glue('preds_df_list_{params$pred_model}_ssp26_gcm.rdata'))) |> stack()
+# 
+# pred_ras_ssp85 <- loadRData(here('data', 'preds',
+#                                    glue('preds_df_list_{params$pred_model}_ssp85_gcm.rdata'))) |> stack()
+
+
+## UPDATED FOR EXPANDED LONS AND BIO ORACLE GCMS's -------------------------------------------------------
 if(is.null(params$stat)){
   pred_ras_histclim <- loadRData(here('data', 'preds',
                                    glue('preds_df_list_{params$pred_model}_histclim_glorys.rdata'))) |> stack()
 } else if (params$stat == "all_time_mean"){
   pred_ras_histclim <- loadRData(here('data', 'preds',
-                                   glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}.rdata'))) |> stack()
+                                   # glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}.rdata'))) |> stack()
+                                   glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}_expanded_lon.rdata'))) |> stack()
 }
 
-pred_ras_ssp26 <- loadRData(here('data', 'preds',
-                                   glue('preds_df_list_{params$pred_model}_ssp26_gcm.rdata'))) |> stack()
+pred_ras_ssp126 <- loadRData(here('data', 'preds',
+                                   glue('preds_df_list_{params$pred_model}_ssp126_gcm.rdata'))) |> stack()
 
-pred_ras_ssp85 <- loadRData(here('data', 'preds',
-                                   glue('preds_df_list_{params$pred_model}_ssp85_gcm.rdata'))) |> stack()
+pred_ras_ssp585 <- loadRData(here('data', 'preds',
+                                   glue('preds_df_list_{params$pred_model}_ssp585_gcm.rdata'))) |> stack()
 
 
 ```
@@ -103,9 +122,19 @@ pred_ras_ssp85 <- loadRData(here('data', 'preds',
 
 ### Downsample GLORYS to match GCMs?? -----
 ```{r}
+# ### Spatially aggregate to match resolutions (1 x 1 degree gcm layer) ----
+# res <- res(pred_ras_ssp26)[1]
+# glorys_pred_resamp <- terra::resample(pred_ras_histclim, pred_ras_ssp26, method="bilinear")
+```
+
+
+### For Bio Oracle GCMs, ignore above and downsample GCMs to match GLORYS -----------
+```{r}
 ### Spatially aggregate to match resolutions (1 x 1 degree gcm layer) ----
-res <- res(pred_ras_ssp26)[1]
-glorys_pred_resamp <- terra::resample(pred_ras_histclim, pred_ras_ssp26, method="bilinear")
+glorys_res <- res(pred_ras_histclim)[1]
+pred_ras_ssp126_resamp <- terra::resample(pred_ras_ssp126, pred_ras_histclim, method="bilinear")
+pred_ras_ssp585_resamp <- terra::resample(pred_ras_ssp585, pred_ras_histclim, method="bilinear")
+
 ```
 
 
@@ -124,14 +153,19 @@ glorys_pred_resamp <- terra::resample(pred_ras_histclim, pred_ras_ssp26, method=
 #### Get world map ----
 ```{r}
 # ## Set variables ----
+# mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
+#   filter(long >= 100 & long <= 210)
+
+
 mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
-  filter(long >= 100 & long <= 210)
+  filter(long >= 100 & long <= 260)
 
 ```
 
 #### Set bbox -----
 ```{r}
-bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+# bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+bbox <- tibble(xmin = 120, xmax = 260, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
 
 ```
 
@@ -158,18 +192,100 @@ if(params$pred_model == "growth_rate"){
 #### Local function to plot maps -----
 ```{r}
 
-plot_preds_map <- function(ras, cbar_title = cbar_title){
+plot_preds_map <- function(ras, cbar_title = cbar_title,
+                            contour_smooth = TRUE,
+                            contour_sigma = 2,
+                            contour_colour = "white"
+                           ){
+  
+  
+  # added for contour smoothing -------------
+    ## Ensure input is a RasterLayer ----
+  if (raster::nlayers(ras) != 1) {
+    stop("Raster must contain exactly one layer")
+  }
+  
+  if (!inherits(ras, "RasterLayer")) {
+    ras <- ras[[1]]
+  }
+  
+  ## Smooth raster for contour lines only ----
+  if (contour_smooth) {
+
+    # Gaussian smoothing kernel
+    k <- raster::focalWeight(
+      ras,
+      d = contour_sigma * raster::res(ras)[1],
+      type = "Gauss"
+    )
+
+    # Normalize kernel weights
+    k <- k / sum(k)
+
+    # Identify valid raster cells
+    ras_valid <- !is.na(ras)
+
+    # Replace NA values with zero for weighted smoothing
+    ras_filled <- ras
+    ras_filled[is.na(ras_filled)] <- 0
+
+    # Weighted sum of raster values
+    ras_weighted <- raster::focal(
+      ras_filled,
+      w = k,
+      fun = sum,
+      pad = TRUE,
+      padValue = 0
+    )
+
+    # Sum of weights for valid cells
+    ras_weights <- raster::focal(
+      ras_valid * 1,
+      w = k,
+      fun = sum,
+      pad = TRUE,
+      padValue = 0
+    )
+
+    # Normalize to account for missing cells
+    ras_contour <- ras_weighted / ras_weights
+
+    # Preserve original NA mask
+    ras_contour <- raster::mask(
+      ras_contour,
+      ras
+    )
+
+  } else {
+
+    ras_contour <- ras
+
+  }
+  ## end contour smoothing
+  
   g <- plot_var(data= ras |> ras2pts(), 
               mapdata, bbox, cpal = rev(cpal), .legend = TRUE, .interp = TRUE)
   
   
    gg <- g + add_border() + resize_cbar(27) +
-    # add_minor_contour_lines(df=ras |> ras2pts() |>
-    #                           mutate(val = value, lon=x, lat=y),
-    #                           contours = .contours_minor, linewidth = 0.5) +
-    add_major_contour_lines(df=ras |> ras2pts() |>
-                              mutate(val = value, lon=x, lat=y), 
-                              contours = .contours_major, linewidth = 0.75) +
+    # # add_minor_contour_lines(df=ras |> ras2pts() |>
+    # #                           mutate(val = value, lon=x, lat=y),
+    # #                           contours = .contours_minor, linewidth = 0.5) +
+    # add_major_contour_lines(df=ras |> ras2pts() |>
+    #                           mutate(val = value, lon=x, lat=y), 
+    #                           contours = .contours_major, linewidth = 0.75) +
+
+     
+  # contour smoothing       
+   ggplot2::geom_contour(
+      data = ras_contour |> ras2pts() |>
+        mutate(val = value, lon = x, lat = y),
+      aes(x = lon, y = lat, z = val),
+      breaks = .contours_major,
+      colour = contour_colour,
+      linewidth = 0.75,
+      na.rm = TRUE
+    ) +
     add_basemap() 
 
   
@@ -212,38 +328,86 @@ plot_preds_map <- function(ras, cbar_title = cbar_title){
 
 #### With Pos Preds Only---
 ```{r}
-# makePos <- function(r){
-#   r[r < 0] <- 0
-#   return(r)
-# }
+# # makePos <- function(r){
+# #   r[r < 0] <- 0
+# #   return(r)
+# # }
+# 
+# # glorys histclim
+# gg_glorys_histclim_pred <- plot_preds_map(ras = glorys_pred_resamp, #cbar_height = cbar_height,
+#                                     cbar_title = cbar_title
+#                                     ) 
+# 
+# # gcm ssp2.6
+# gg_gcm_ssp26_pred <- plot_preds_map(ras = pred_ras_ssp26, #|> makePos(),   
+#                                     cbar_title = cbar_title)
+# 
+# # gcm ssp8.5
+# gg_gcm_ssp85_pred <- plot_preds_map(ras = pred_ras_ssp85, #|> makePos()
+#                                     cbar_title = cbar_title)
+# 
+# 
 
+## UPDATED FOR EXPANDED LONS AND BIO ORACLE GCMS ------------------------------------------
 # glorys histclim
-gg_glorys_histclim_pred <- plot_preds_map(ras = glorys_pred_resamp, #cbar_height = cbar_height,
-                                    cbar_title = cbar_title) 
+gg_glorys_histclim_pred <- plot_preds_map(ras = pred_ras_histclim, #glorys_pred_resamp, #cbar_height = cbar_height,
+                                    cbar_title = cbar_title,
+                                    contour_smooth = TRUE,
+                                    contour_sigma = 5#2
+                                    ) 
 
 # gcm ssp2.6
-gg_gcm_ssp26_pred <- plot_preds_map(ras = pred_ras_ssp26, #|> makePos(),   
-                                    cbar_title = cbar_title)
+gg_gcm_ssp126_pred <- plot_preds_map(ras = pred_ras_ssp126_resamp, #|> makePos(),   
+                                    cbar_title = cbar_title,
+                                    contour_smooth = TRUE,
+                                    contour_sigma = 5#2
+                                    )
 
 # gcm ssp8.5
-gg_gcm_ssp85_pred <- plot_preds_map(ras = pred_ras_ssp85, #|> makePos()
-                                    cbar_title = cbar_title)
-
+gg_gcm_ssp585_pred <- plot_preds_map(ras = pred_ras_ssp585_resamp, #|> makePos()
+                                    cbar_title = cbar_title,
+                                    contour_smooth = TRUE,
+                                    contour_sigma = 5#2
+                                    ) 
       
 ```
 
 ### Save with Pos Preds ----
 ```{r}
 
-gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp26_pred, gg_gcm_ssp85_pred)
-names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals'),
-                    glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals'),
-                    glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals'))
+# gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp26_pred, gg_gcm_ssp85_pred)
+# names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals'),
+#                     glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals'),
+#                     glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals'))
+# 
+# if(params$stat == "all_time_mean"){
+#   gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}.png')) |> as.list()
+# } else {
+#   gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
+# }
+# ## save
+# # invisible(mapply(ggsave, file=paste0("plot_", names(gg_list), ".png"), 
+# #                  path = here('figs'),
+# #                  plot=gg_list))
+# 
+# ## save - this works (so does the above commented out option)
+# walk2(
+#   gg_fnames,
+#       gg_list,
+#   \(path, plot) ggsave(path, plot, width = 8)
+# )
+
+
+
+gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp126_pred, gg_gcm_ssp585_pred)
+names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals_expanded_lon'),
+                    glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals_expanded_lon'),
+                    glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals_expanded_lon'))
 
 if(params$stat == "all_time_mean"){
-  gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}.png')) |> as.list()
+  gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}_expanded_lon.png')) |> as.list()
 } else {
-  gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
+  gg_fnames <-  here('figs', glue('{names(gg_list)}_expanded_lon.png')) |> as.list()
 }
 ## save
 # invisible(mapply(ggsave, file=paste0("plot_", names(gg_list), ".png"), 
@@ -268,7 +432,9 @@ library(gtools)
 
 
 # List plots files
-flist <- list.files(here('figs'),pattern = "pred_map",full.names=T)
+# flist <- list.files(here('figs'),pattern = "pred_map",full.names=T)
+flist <- list.files(here('figs'),pattern = "_expanded_lon",full.names=T)
+
 plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
 
 plot_files_extent <- plot_files#[grepl(p_extent, plot_files, fixed=TRUE)] 
@@ -295,12 +461,23 @@ crop_image(pfiles)
 ## Save RData ----
 ```{r}
 ## Save rdata ---- (for ms fig formatting)
+# save(
+#   gg_glorys_histclim_pred, 
+#   gg_gcm_ssp26_pred, 
+#   gg_gcm_ssp85_pred,
+#   
+#   file = here('data', 'gg_data', glue('gg_pred_maps_{params$pred_model}.rdata')))
+
+
+
 save(
   gg_glorys_histclim_pred, 
-  gg_gcm_ssp26_pred, 
-  gg_gcm_ssp85_pred,
+  gg_gcm_ssp126_pred, 
+  gg_gcm_ssp585_pred,
   
-  file = here('data', 'gg_data', glue('gg_pred_maps_{params$pred_model}.rdata')))
+  file = here('data', 'gg_data', glue('gg_pred_maps_{params$pred_model}_expanded_lon.rdata')))
+
+
 
 ```
 
