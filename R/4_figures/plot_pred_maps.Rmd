@@ -100,18 +100,18 @@ params$spp <- 'G.polynesiensis'
 
 ## UPDATED FOR EXPANDED LONS AND BIO ORACLE GCMS's -------------------------------------------------------
 if(is.null(params$stat)){
-  pred_ras_histclim <- loadRData(here('data', 'preds',
+  pred_ras_histclim <- loadRData(here('data', 'preds', 
                                    glue('preds_df_list_{params$pred_model}_histclim_glorys.rdata'))) |> stack()
 } else if (params$stat == "all_time_mean"){
-  pred_ras_histclim <- loadRData(here('data', 'preds',
+  pred_ras_histclim <- loadRData(here('data', 'preds', 'expanded_lon',
                                    # glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}.rdata'))) |> stack()
                                    glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}_expanded_lon.rdata'))) |> stack()
 }
 
-pred_ras_ssp126 <- loadRData(here('data', 'preds',
+pred_ras_ssp126 <- loadRData(here('data', 'preds', 'expanded_lon',
                                    glue('preds_df_list_{params$pred_model}_ssp126_gcm.rdata'))) |> stack()
 
-pred_ras_ssp585 <- loadRData(here('data', 'preds',
+pred_ras_ssp585 <- loadRData(here('data', 'preds', 'expanded_lon',
                                    glue('preds_df_list_{params$pred_model}_ssp585_gcm.rdata'))) |> stack()
 
 
