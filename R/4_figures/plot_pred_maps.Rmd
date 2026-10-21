@@ -470,14 +470,24 @@ crop_image(pfiles)
 
 
 
+# save(
+#   gg_glorys_histclim_pred, 
+#   gg_gcm_ssp126_pred, 
+#   gg_gcm_ssp585_pred,
+#   
+#   file = here('data', 'gg_data', 'expanded_lon', glue('gg_pred_maps_{params$pred_model}_expanded_lon.rdata')))
+
+fpath <- here(
+  'data', 'gg_data', 'expanded_lon',
+  glue('gg_pred_maps_{params$pred_model}_expanded_lon.rdata')
+)
+
 save(
-  gg_glorys_histclim_pred, 
-  gg_gcm_ssp126_pred, 
+  gg_glorys_histclim_pred,
+  gg_gcm_ssp126_pred,
   gg_gcm_ssp585_pred,
-  
-  file = here('data', 'gg_data', glue('gg_pred_maps_{params$pred_model}_expanded_lon.rdata')))
-
-
+  file = fpath
+)
 
 ```
 
