@@ -25,8 +25,10 @@ if((params$source=='glorys') | (params$type=='histclim')){
     # limits <- c(20, 38)
     # breaks <- seq(20, 38, 1)
     
-    limits <- c(27, 36)
-    breaks <- seq(27, 36, 1)
+    # limits <- c(27, 36)
+    # breaks <- seq(27, 36, 1)
+    limits <- c(27, 37)
+    breaks <- seq(27, 37, 1)
     
     leg_units = ""
     
@@ -59,11 +61,9 @@ if (params$location == "japan") {
 } else if (params$location == "nz") {
   bbox <- tibble(xmin = 160, xmax = 210, ymin = -15, ymax = -60, xstep = 10, ystep = -10)
 } else if (params$location == "full"){
-  bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
-}
-
-
-
+  # bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+  bbox <- tibble(xmin = 120, xmax = 260, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+}  
 
 ## set up manual contour functions for ggplot -- note these are 'label-less' ----
 add_major_contour_lines <- function(df, contours, col='snow', linewidth = 1.25){

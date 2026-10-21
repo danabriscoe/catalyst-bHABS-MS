@@ -50,6 +50,9 @@ library(fontawesome)
 library(rmarkdown)
 
 library(patchwork)
+
+library(glue)
+library(here)
 ```
 
 
@@ -75,7 +78,10 @@ params$spp <- 'G.polynesiensis'
   } else if (params$location == "nz") {
     bbox <- tibble(xmin = 160, xmax = 210, ymin = -15, ymax = -60, xstep = 10, ystep = -10)
   } else if (params$location == 'full'){
-    bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 20, ystep = 20)#-10)
+    # bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 20, ystep = 20)#-10)
+    
+    # updated for expanded lons
+    bbox <- tibble(xmin = 120, xmax = 260, ymin = -60, ymax = 60, xstep = 20, ystep = 20)#-10)
   }
 ```
 
@@ -85,7 +91,8 @@ params$spp <- 'G.polynesiensis'
 ```{r}
 fpattern = c('gg_clims', params$pred_model)
 
-flist = list.files(here('data', 'gg_data'), pattern = paste0(fpattern, collapse="|"), full.names = T) 
+# flist = list.files(here('data', 'gg_data'), pattern = paste0(fpattern, collapse="|"), full.names = T) 
+flist = list.files(here('data', 'gg_data', 'expanded_lon'), pattern = paste0(fpattern, collapse="|"), full.names = T) 
 
 lapply(flist, load, environment())
 ```
@@ -119,8 +126,10 @@ format_subtitle <- function(size=14){
 format_plot_tag <- function(loc, size=5, color = "white", label = "A"){
   list(
         annotate("text", 
-             x = 123.5,
-             y = 57, 
+             # x = 123.5,
+             # y = 57,
+             x = 125,
+             y = 53.5,
              label = label, col = color, size = size)
   )
   
@@ -199,8 +208,11 @@ display_multi_figs_2panel <- function(pleft, pright){
     pleft <- pleft + 
       labs(caption = '', x = '') +
       scale_x_continuous(
-        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
-        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        # # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        # breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+
+        breaks = setdiff(seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep), 260),
+        
         labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
                              ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
                              ifelse(x == 180, paste0(x, "°"), x)))
@@ -225,8 +237,11 @@ display_multi_figs_2panel <- function(pleft, pright){
            legend.title=element_text(size=10.5, face = "bold"),
            axis.title.y = element_blank()) +
       scale_x_continuous(
-        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
-        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        # # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        # breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        
+        breaks = setdiff(seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep), 260),
+        
         labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
                              ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
                              ifelse(x == 180, paste0(x, "°"), x)))
@@ -263,8 +278,10 @@ display_multi_figs_3panel <- function(pleft, pcenter, pright){
     pleft <- pleft + 
       labs(caption = '', x = '') +
       scale_x_continuous(
-        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
-        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        # # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        # breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        
+        breaks = setdiff(seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep), 260),
         labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
                              ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
                              ifelse(x == 180, paste0(x, "°"), x)))
@@ -283,8 +300,10 @@ display_multi_figs_3panel <- function(pleft, pcenter, pright){
     pcenter <- pcenter + 
       labs(caption = '') +
       scale_x_continuous(
-        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
-        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        # # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        # breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        breaks = setdiff(seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep), 260),
+        
         labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
                              ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
                              ifelse(x == 180, paste0(x, "°"), x)))
@@ -307,8 +326,10 @@ display_multi_figs_3panel <- function(pleft, pcenter, pright){
            legend.title=element_text(size=10.5, face = "bold"),
            axis.title.y = element_blank()) +
       scale_x_continuous(
-        # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
-        breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+        # # breaks = seq(bbox$xmin + 10, (bbox$xmax - 10), 
+        # breaks = seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep),
+       breaks = setdiff(seq(bbox$xmin + 20, bbox$xmax, by = bbox$xstep), 260),
+        
         labels = function(x) ifelse(x < 180, paste0(x, "°E"), 
                              ifelse(x > 180, paste0("", abs(make180(x)), "°W"), 
                              ifelse(x == 180, paste0(x, "°"), x)))
@@ -344,42 +365,83 @@ display_multi_figs_3panel <- function(pleft, pcenter, pright){
 #### Clims: Current - SSP 2.6 Preds & Current - SSP 8.5 Preds (2-Panel) -----
 
 ```{r}
+# p_thetao_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+#     pleft = gg_list_thetao[['clim_map_histclim_glorys_resamp_thetao']], 
+#     pcenter = gg_list_thetao[['clim_map_ssp26_thetao']],
+#     pright = gg_list_thetao[['clim_map_ssp85_thetao']]
+#     ) 
+#                                    
+# p_thetao_glorys_ssp26_ssp85_3panel <- p_thetao_glorys_ssp26_ssp85_3panel + resize_cbar(23)
+# 
+# ### Save plot ----
+# ggsave(filename = str_c('plot_thetao_glorys_ssp26_ssp85_3panel_', 
+#                         params$location, "_draft_ms_fig",
+#                         params$fig_out_ext), 
+#        plot = p_thetao_glorys_ssp26_ssp85_3panel, 
+#        # height=9,
+#        width=13, bg='white',
+#        path = here('figs'))
+
+
+## UPDATED FOR EXPANDED LONS AND BIO ORACLE GCMs ---------------------
+
 p_thetao_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
-    pleft = gg_list_thetao[['clim_map_histclim_glorys_resamp_thetao']], 
-    pcenter = gg_list_thetao[['clim_map_ssp26_thetao']],
-    pright = gg_list_thetao[['clim_map_ssp85_thetao']]
+    pleft = gg_list_thetao[['clim_map_histclim_glorys_thetao_expanded_lons']], 
+    pcenter = gg_list_thetao[['clim_map_ssp126_thetao_expanded_lons']],
+    pright = gg_list_thetao[['clim_map_ssp585_thetao_expanded_lons']]
     ) 
                                    
-p_thetao_glorys_ssp26_ssp85_3panel <- p_thetao_glorys_ssp26_ssp85_3panel + resize_cbar(23)
+p_thetao_glorys_ssp26_ssp85_3panel <- p_thetao_glorys_ssp26_ssp85_3panel + resize_cbar(13.5)
 
 ### Save plot ----
-ggsave(filename = str_c('plot_thetao_glorys_ssp26_ssp85_3panel_', 
-                        params$location, "_draft_ms_fig",
+ggsave(filename = str_c('plot_thetao_glorys_ssp126_ssp585_3panel_', 
+                        params$location, "_draft_ms_fig", "_expanded_lon",
                         params$fig_out_ext), 
        plot = p_thetao_glorys_ssp26_ssp85_3panel, 
        # height=9,
-       width=13, bg='white',
+       width=15, bg='white',
        path = here('figs'))
+
 ```
 
 
 ```{r}
+# p_so_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+#     pleft = gg_list_so[['clim_map_histclim_glorys_resamp_so']], 
+#     pcenter = gg_list_so[['clim_map_ssp26_so']],
+#     pright = gg_list_so[['clim_map_ssp85_so']]
+#     ) 
+#                                    
+# p_so_glorys_ssp26_ssp85_3panel <- p_so_glorys_ssp26_ssp85_3panel + resize_cbar(23)
+# 
+# ### Save plot ----
+# ggsave(filename = str_c('plot_so_glorys_ssp26_ssp85_3panel_', params$pred_model, "_", 
+#                         params$location, "_draft_ms_fig",
+#                         params$fig_out_ext), 
+#        plot = p_so_glorys_ssp26_ssp85_3panel, 
+#        # height=9,
+#        width=13, bg='white',
+#        path = here('figs'))
+
+
+## UPDATED FOR EXPANDED LONS AND BIO ORACLE GCMs ---------------------
 p_so_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
-    pleft = gg_list_so[['clim_map_histclim_glorys_resamp_so']], 
-    pcenter = gg_list_so[['clim_map_ssp26_so']],
-    pright = gg_list_so[['clim_map_ssp85_so']]
+    pleft = gg_list_so[['clim_map_histclim_glorys_resamp_so_expanded_lons']], 
+    pcenter = gg_list_so[['clim_map_ssp126_so_expanded_lons']],
+    pright = gg_list_so[['clim_map_ssp585_so_expanded_lons']]
     ) 
                                    
-p_so_glorys_ssp26_ssp85_3panel <- p_so_glorys_ssp26_ssp85_3panel + resize_cbar(23)
+p_so_glorys_ssp26_ssp85_3panel <- p_so_glorys_ssp26_ssp85_3panel + resize_cbar(13.5)
 
 ### Save plot ----
-ggsave(filename = str_c('plot_so_glorys_ssp26_ssp85_3panel_', params$pred_model, "_", 
-                        params$location, "_draft_ms_fig",
+ggsave(filename = str_c('plot_so_glorys_ssp126_ssp585_3panel_', params$pred_model, "_", 
+                        params$location, "_draft_ms_fig", '_expanded_lon',
                         params$fig_out_ext), 
        plot = p_so_glorys_ssp26_ssp85_3panel, 
        # height=9,
        width=13, bg='white',
        path = here('figs'))
+
 ```
 
 
@@ -388,26 +450,53 @@ ggsave(filename = str_c('plot_so_glorys_ssp26_ssp85_3panel_', params$pred_model,
 
 ### Current vs SSP 2.6 vs SSP 8.5 Preds (3-Panel) -----
 ```{r p_glorys_ssp26-3panel}
-p_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+# p_glorys_ssp26_ssp85_3panel <- display_multi_figs_3panel(
+#     pleft = gg_glorys_histclim_pred, 
+#     pcenter = gg_gcm_ssp26_pred,
+#     pright = gg_gcm_ssp85_pred
+#     ) 
+#                                    
+# if(params$pred_model=="growth_rate"){
+#   p_glorys_ssp26_ssp85_3panel <- p_glorys_ssp26_ssp85_3panel + resize_cbar(21.5)
+# } else if(params$pred_model=="CTX_rate"){
+#   p_glorys_ssp26_ssp85_3panel <- p_glorys_ssp26_ssp85_3panel + resize_cbar(21)
+# }
+# 
+# ### Save plot ----
+# ggsave(filename = str_c('plot_glorys_ssp26_ssp85_3panel_', params$pred_model, "_", 
+#                         params$location, "_draft_ms_fig",
+#                         params$fig_out_ext), 
+#        plot = p_glorys_ssp26_ssp85_3panel, 
+#        # height=9,
+#        width=13, bg='white',
+#        path = here('figs'))
+
+
+
+## UPDATED FOR EXPANDED LONS AND BIO ORACLE GCMs ---------------------
+p_glorys_ssp126_ssp585_3panel <- display_multi_figs_3panel(
     pleft = gg_glorys_histclim_pred, 
-    pcenter = gg_gcm_ssp26_pred,
-    pright = gg_gcm_ssp85_pred
+    pcenter = gg_gcm_ssp126_pred,
+    pright = gg_gcm_ssp585_pred
     ) 
                                    
 if(params$pred_model=="growth_rate"){
-  p_glorys_ssp26_ssp85_3panel <- p_glorys_ssp26_ssp85_3panel + resize_cbar(21.5)
+  p_glorys_ssp126_ssp585_3panel <- p_glorys_ssp126_ssp585_3panel + resize_cbar(13.5)
 } else if(params$pred_model=="CTX_rate"){
-  p_glorys_ssp26_ssp85_3panel <- p_glorys_ssp26_ssp85_3panel + resize_cbar(21)
+  p_glorys_ssp126_ssp585_3panel <- p_glorys_ssp126_ssp585_3panel + resize_cbar(21)
 }
 
 ### Save plot ----
-ggsave(filename = str_c('plot_glorys_ssp26_ssp85_3panel_', params$pred_model, "_", 
-                        params$location, "_draft_ms_fig",
+ggsave(filename = str_c('plot_glorys_ssp126_ssp585_3panel_', params$pred_model, "_", 
+                        params$location, "_draft_ms_fig", '_expanded_lon',
                         params$fig_out_ext), 
-       plot = p_glorys_ssp26_ssp85_3panel, 
+       plot = p_glorys_ssp126_ssp585_3panel, 
        # height=9,
        width=13, bg='white',
        path = here('figs'))
+
+
+
 ```
 
 
@@ -415,26 +504,52 @@ ggsave(filename = str_c('plot_glorys_ssp26_ssp85_3panel_', params$pred_model, "_
 
 #### Diff Preds: Current - SSP 2.6 Preds & Current - SSP 8.5 Preds (2-Panel) -----
 ```{r p_ssp26_ssp85_diff_btwn_ssp26_ssp85_3panel}
+# 
+# p_ssp26_ssp85_diff_btwn_glorys_2panel <- display_multi_figs_2panel(
+#     pleft = gg_diff_ssp26_glorys_pred, 
+#     pright = gg_diff_ssp85_glorys_pred
+#     )
+# 
+# if(params$pred_model=="growth_rate"){
+#   p_ssp26_ssp85_diff_btwn_glorys_2panel <- 
+#     p_ssp26_ssp85_diff_btwn_glorys_2panel + resize_cbar(25)
+# } else if(params$pred_model=="CTX_rate"){
+#   p_ssp26_ssp85_diff_btwn_glorys_2panel <- 
+#     p_ssp26_ssp85_diff_btwn_glorys_2panel + resize_cbar(25)
+# }
+# 
+# ### Save plot ----
+# ggsave(filename = str_c('plot_ssp26_ssp85_diff_btwn_glorys_2panel_', ... = 
+#                         params$pred_model, "_", 
+#                         params$location, "_draft_ms_fig",
+#                         params$fig_out_ext), 
+#        plot = p_ssp26_ssp85_diff_btwn_glorys_2panel, 
+#        # height=9,
+#        width=13, bg='white',
+#        path = here('figs'))
 
-p_ssp26_ssp85_diff_btwn_glorys_2panel <- display_multi_figs_2panel(
-    pleft = gg_diff_ssp26_glorys_pred, 
-    pright = gg_diff_ssp85_glorys_pred
+
+### UPDATED ----------------------------
+
+p_ssp126_ssp585_diff_btwn_glorys_2panel <- display_multi_figs_2panel(
+    pleft = gg_diff_ssp126_glorys_pred, 
+    pright = gg_diff_ssp585_glorys_pred
     )
 
 if(params$pred_model=="growth_rate"){
-  p_ssp26_ssp85_diff_btwn_glorys_2panel <- 
-    p_ssp26_ssp85_diff_btwn_glorys_2panel + resize_cbar(25)
+  p_ssp126_ssp585_diff_btwn_glorys_2panel <- 
+    p_ssp126_ssp585_diff_btwn_glorys_2panel + resize_cbar(25)
 } else if(params$pred_model=="CTX_rate"){
-  p_ssp26_ssp85_diff_btwn_glorys_2panel <- 
-    p_ssp26_ssp85_diff_btwn_glorys_2panel + resize_cbar(25)
+  p_ssp126_ssp585_diff_btwn_glorys_2panel <- 
+    p_ssp126_ssp585_diff_btwn_glorys_2panel + resize_cbar(25)
 }
 
 ### Save plot ----
-ggsave(filename = str_c('plot_ssp26_ssp85_diff_btwn_glorys_2panel_', ... = 
+ggsave(filename = str_c('plot_ssp126_ssp585_diff_btwn_glorys_2panel_', 
                         params$pred_model, "_", 
-                        params$location, "_draft_ms_fig",
+                        params$location, "_draft_ms_fig", "_expanded_lon",
                         params$fig_out_ext), 
-       plot = p_ssp26_ssp85_diff_btwn_glorys_2panel, 
+       plot = p_ssp126_ssp585_diff_btwn_glorys_2panel, 
        # height=9,
        width=13, bg='white',
        path = here('figs'))
@@ -448,8 +563,21 @@ ggsave(filename = str_c('plot_ssp26_ssp85_diff_btwn_glorys_2panel_', ... =
 library(gtools)
 
 
+fpattern <- c('draft_ms', '_expanded_lon')
+
 # List plots files
-flist <- list.files(here('figs'),pattern = "plot_",full.names=T)
+# flist <- list.files(here('figs'),pattern = "plot_",full.names=T)
+
+flist <- list.files(here("figs"), full.names = TRUE)
+
+flist <- flist[
+  grepl(
+    paste0("(?=.*", fpattern, ")", collapse = ""),
+    basename(flist),
+    perl = TRUE
+  )
+]
+
 plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
 
 plot_files_extent <- plot_files#[grepl(p_extent, plot_files, fixed=TRUE)] 

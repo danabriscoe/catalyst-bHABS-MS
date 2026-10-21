@@ -17,8 +17,8 @@ params:
   # stat: !r NULL
   stat: "all_time_mean"
   location: 'full'
-  pred_model: 'growth_rate'
-  # pred_model: 'CTX_rate'
+  # pred_model: 'growth_rate'
+  pred_model: 'CTX_rate'
   contour_labs: FALSE
   cbar_ticks_int: 1
   contours_major: TRUE
