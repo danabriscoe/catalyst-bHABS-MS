@@ -36,23 +36,35 @@ source(
 
 ## Set fpath, pull temp files ----
 # ncIn <- "~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/cmems_glorys_global_multiyear_phy_full_2024-09-01_catalyst.nc"
-ncIn <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/cmems_glorys_global_multiyear_phy_full_2025-12-01_catalyst.nc'
+# ncIn <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/sat_data/glorys/expanded_lon/cmems_glorys_global_multiyear_phy_full_2025-12-01_catalyst.nc'
+
+# 
+# 
+# ## INTERIM: Load as raster ----
+# ras <- raster(
+#   ncIn,
+#   varname = "thetao"
+# )
+# 
+# 
+# ## Assign ras name == date ----
+# g_dates <- get_fdates(
+#   ncsIn = ncIn,
+#   # pluck_idx = 11
+#   pluck_idx = 12  # for expanded lons fnames
+# ) %>%
+#   as.Date()
 
 
-## INTERIM: Load as raster ----
-ras <- raster(
-  ncIn,
-  varname = "thetao"
-)
 
+### UPDATED -----------------------------
+## load in all time pred glorys layer:
 
-## Assign ras name == date ----
-g_dates <- get_fdates(
-  ncsIn = ncIn,
-  # pluck_idx = 11
-  pluck_idx = 12  # for expanded lons fnames
-) %>%
-  as.Date()
+# pred_ras_histclim <- loadRData(here('data', 'preds', 'expanded_lon',
+#                                     # glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}.rdata'))) |> stack()
+#                                     glue('preds_df_list_growth_rate_histclim_glorys_all_time_mean_expanded_lon.rdata')))
+# 
+# ras = pred_ras_histclim$`1993-01-01`
 
 
 ## High-resolution coastline / land ----
@@ -301,7 +313,21 @@ gamb_locs <- read.csv(here::here(
 
 ## Add locations to existing SST map ----
 
-gp_w_locs <- gp +
+flist = (here('data', 'gg_data', 'expanded_lon', 'gg_pred_maps_growth_rate_expanded_lon.rdata'))
+
+lapply(flist, load, environment())
+
+
+gg_glorys_histclim_pred
+
+
+
+
+gp_w_locs <- 
+  
+  # gp +
+  
+  gg_glorys_histclim_pred +
   
   geom_point(
     data = gamb_locs,
@@ -320,12 +346,12 @@ gp_w_locs <- gp +
   ## Labels
   labs(
     caption = str_c(
-      format(
-        g_dates[1],
-        "%B %Y "
-      ), 
-      "SST ",
-      "with G.polynesiensis locations (white circles)"
+      # format(
+      #   g_dates[1],
+      #   "%B %Y "
+      # ), 
+      "Predictive Map (1993-2025) ",
+      "with detected G.polynesiensis locations (white circles)"
     )
   )
 
@@ -337,10 +363,14 @@ gp_w_locs
 
 ## save gp with locations
 filenm_gp_locs <- here(
-  "qmd",
-  "images",
+  # "qmd",
+  # "images",
+  'figs',
+  
   glue(
-    "study_area_with_sst_GambMap_Data.png"
+    # "study_area_with_sst_GambMap_Data.png"
+    "study_area_with_Growth_rate_preds_1993_2025_and_GambMap_Data_dbriscoe.png"
+    # "study_area_with_CTX_rate_preds_1993_2025_and_GambMap_Data_dbriscoe.png"
   )
 )
 
