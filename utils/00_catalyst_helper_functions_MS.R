@@ -130,6 +130,22 @@ process_gcm_ncs <- function(nclist=nclist, location=location, varname=varname, a
 }
 
 
+# process_gcm_tifs 
+process_gcm_tifs <- function(nclist=nclist, location=location){
+  
+  ras_list <- lapply(
+    nc_list[[location]],
+    function(x) raster::brick(x)
+  )
+
+  names(ras_list) <- tools::file_path_sans_ext(
+    basename(nc_list[[location]])
+  )
+
+  return(ras_list)
+}
+
+
 # points to raster (required for getContours to work on gcm rasters) - for ggplot
 pts2ras <- function(df){
   coordinates(df) <- ~ x + y
@@ -150,6 +166,21 @@ ras2pts <- function(x) {
   
   
 ## Plot functions -----
+prepare_map_data <- function(lon_format) {
+    if (lon_format == 180) {
+      world_raw <- sf::st_as_sf(maps::map("world", plot = FALSE, fill = TRUE))
+      world_fixed <- sf::st_transform(world_raw, crs = 4326)
+      st_wrap_dateline(world_fixed, options = c("WRAPDATELINE=YES", "DATELINEOFFSET=180"))
+    } else {
+      sf::st_as_sf(maps::map("world2", plot = FALSE, fill = TRUE)) %>%
+        sf::st_transform(crs = 4326)
+    }
+  }
+  
+world_sf <- prepare_map_data(lon_format = 360)
+
+
+  
 plot_var <- function(data, mapdata, bbox, cpal = rev(rainbow(100)), .interp=FALSE, .legend = TRUE) {
   g <- ggplot() +
     
@@ -161,7 +192,8 @@ plot_var <- function(data, mapdata, bbox, cpal = rev(rainbow(100)), .interp=FALS
     scale_fill_gradientn(colours = cpal, na.value = "white") +
     
     # basemap
-    geom_polygon(data = mapdata, aes(x = long, y = lat, group = group), color = "black", fill = "black") +
+    # geom_polygon(data = mapdata, aes(x = long, y = lat, group = group), color = "black", fill = "black") +
+    geom_sf(data = world_sf, fill = "black", color = "black") +
     
     # set scales, coords
     scale_x_continuous(breaks = seq(bbox$xmin, bbox$xmax, by = 10)) +
@@ -326,6 +358,15 @@ get_plot <- function(data, ras, mapdata, cpal, bbox, .legend = TRUE, .contours_m
 } # end get_plot
 
 }
+
+# wound up not needing this
+# update_map_extent <- function(xrange, yrange){
+#   list(
+#     coord_sf(xlim = c(xrange[1], xrange[2]), ylim = c(yrange[1], yrange[2]),
+#              expand = FALSE, crs = sf::st_crs(4326))
+#   )
+# }
+
 
 scale_y_latitude <- function(ymin=-90, ymax=90, step=0.5, ...) {
   ybreaks <- seq(ymin,ymax,step)

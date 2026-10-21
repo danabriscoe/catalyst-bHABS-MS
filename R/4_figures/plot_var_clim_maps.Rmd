@@ -9,8 +9,10 @@ params:
   var: 'thetao'
   # var: 'so'
   depth: '_0m'
-  scenario: 'ssp26'
-  # scenario: 'ssp85'
+    # scenario: 'ssp26'
+    # scenario: 'ssp85'
+  # scenario: 'ssp126'
+  scenario: 'ssp585'
   type: 'histclim'
   # stat: !r NULL
   stat: 'all_time_mean'
@@ -70,8 +72,11 @@ params$spp <- 'G.polynesiensis'
 ```{r}
 
 ## Glorys var clim ----
-clim_ras_histclim <- here('data', 'processed',
-                      glue("glorys_all_time_mean_ras_full_1993-01-01_2024-12-31_{params$var}_0m.grd")) |> stack()
+# clim_ras_histclim <- here('data', 'processed',
+#                       glue("glorys_all_time_mean_ras_full_1993-01-01_2024-12-31_{params$var}_0m.grd")) |> stack()
+
+clim_ras_histclim <- here('data', 'processed', 'expanded_lon',
+                      glue("glorys_all_time_mean_ras_full_1993-01-01_2025-12-31_{params$var}_0m_expanded_lon.grd")) |> stack()
 
 ## GCM var clim
 # update local param var for gcms
@@ -81,13 +86,28 @@ clim_ras_histclim <- here('data', 'processed',
     pvar = 'sss'
   }
 
-## SSP 2.6 var clim ---
-clim_ras_ssp26 <- here('data', 'processed',
-                      glue("ssp26_{pvar}_ann_histclim_full_2070_2099_0m.grd")) |> stack()
+# ## SSP 2.6 var clim ---
+# clim_ras_ssp26 <- here('data', 'processed',
+#                       glue("ssp26_{pvar}_ann_histclim_full_2070_2099_0m.grd")) |> stack()
+# 
+# ## SSP 8.5 var clim ---
+# clim_ras_ssp85 <- here('data', 'processed',
+#                       glue("ssp85_{pvar}_ann_histclim_full_2070_2099_0m.grd")) |> stack()
 
-## SSP 8.5 var clim ---
-clim_ras_ssp85 <- here('data', 'processed',
-                      glue("ssp85_{pvar}_ann_histclim_full_2070_2099_0m.grd")) |> stack()
+
+## SSP 126 var clim --- BIO ORACLE GCMs -------------------------------
+# fyi, use params$var not pvar!
+
+grd_dir <- '~/Dropbox/bkup_cawth/OneDrive/Catalyst_project_2021/data/gcm_data/bio_oracle_gcm/processed'
+
+## SSP 126 var clim ---
+clim_ras_ssp26 <- glue("{grd_dir}/{params$var}_ssp126_2020_2100_depthsurf_{params$var}_mean_2090_pacific.grd") |> stack() 
+
+## SSP 585 var clim ---
+clim_ras_ssp85 <- glue("{grd_dir}/{params$var}_ssp585_2020_2100_depthsurf_{params$var}_mean_2090_pacific.grd") |> stack()
+
+
+
 ```
 
 
@@ -95,27 +115,54 @@ clim_ras_ssp85 <- here('data', 'processed',
 ### Downsample GLORYS to match GCMs?? -----
 ```{r}
 ### Spatially aggregate to match resolutions (1 x 1 degree gcm layer) ----
-res <- res(clim_ras_ssp26)[1]
-glorys_clim_resamp <- terra::resample(clim_ras_histclim, clim_ras_ssp26, method="bilinear")
+# res <- res(clim_ras_ssp26)[1]
+# glorys_clim_resamp <- terra::resample(clim_ras_histclim, clim_ras_ssp26, method="bilinear")
+
+
+## UPDATE (oct 2026): Now glorys is the larger spatial res, so need to resamp 'clim_ras' from 0.0499 to 0.083!!
+glorys_res <- res(clim_ras_histclim)[1] # use glorys as the common denominator res now
+# glorys_clim_resamp <- terra::resample(clim_ras_histclim, clim_ras_ssp26, method="bilinear")
+
+glorys_clim_resamp <- clim_ras_histclim # just rename, for consistency...
+clim_ras_ssp26_resamp <- terra::resample(clim_ras_ssp26, clim_ras_histclim, method="bilinear")
+clim_ras_ssp85_resamp <- terra::resample(clim_ras_ssp85, clim_ras_histclim, method="bilinear")
+
+
 ```
 
 
 ## Get Diffs (Future - Current) ----
 ```{r}
 
+# # SSP 2.6 - Glorys ----
+# gg_clim_diff_ssp26_glorys <- clim_ras_ssp26 - glorys_clim_resamp
+# 
+# # SSP 8.5 - Glorys ----
+# gg_clim_diff_ssp85_glorys <- clim_ras_ssp85 - glorys_clim_resamp
+
+
+## UPDATE:  USE RESAMPLED BIO ORACLE RAS ---------------------------------------
+
 # SSP 2.6 - Glorys ----
-gg_clim_diff_ssp26_glorys <- clim_ras_ssp26 - glorys_clim_resamp
+gg_clim_diff_ssp26_glorys <- clim_ras_ssp26_resamp - glorys_clim_resamp
 
 # SSP 8.5 - Glorys ----
-gg_clim_diff_ssp85_glorys <- clim_ras_ssp85 - glorys_clim_resamp
+gg_clim_diff_ssp85_glorys <- clim_ras_ssp85_resamp - glorys_clim_resamp
+
 
 ```
 
 
 ## Get Diffs (Future 8.5 - Future 2.6) ----
 ```{r}
+# # SSP 8.5 - SSP 2.6 ----
+# gg_clim_diff_ssp85_ssp26 <- clim_ras_ssp85 - clim_ras_ssp26
+
+
+## UPDATE:  USE RESAMPLED BIO ORACLE RAS ---------------------------------------
+
 # SSP 8.5 - SSP 2.6 ----
-gg_clim_diff_ssp85_ssp26 <- clim_ras_ssp85 - clim_ras_ssp26
+gg_clim_diff_ssp85_ssp26 <- clim_ras_ssp85_resamp - clim_ras_ssp26_resamp
 
 ```
 
@@ -127,14 +174,21 @@ gg_clim_diff_ssp85_ssp26 <- clim_ras_ssp85 - clim_ras_ssp26
 #### Get world map ----
 ```{r}
 # ## Set variables ----
+# mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
+#   filter(long >= 100 & long <= 210)
+
+# bio oracle
 mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
-  filter(long >= 100 & long <= 210)
+  filter(long >= 100 & long <= 300)
 
 ```
 
 #### Set bbox -----
 ```{r}
-bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+# bbox <- tibble(xmin = 120, xmax = 210, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
+
+# bio oracle
+bbox <- tibble(xmin = 120, xmax = 260, ymin = -60, ymax = 60, xstep = 10, ystep = -10)
 
 ```
 
@@ -163,37 +217,164 @@ if(params$var == "thetao"){
 
 #### Local function to plot maps -----
 ```{r}
-
-plot_clim_map <- function(ras, cbar_title = cbar_title){
-  g <- plot_var(data= ras |> ras2pts(), 
-              mapdata, bbox, cpal = rev(cpal), .legend = TRUE, .interp = TRUE)
-  
-  
-   gg <- g + add_border() + resize_cbar(29) +
-    # add_minor_contour_lines(df=ras |> ras2pts() |>
-    #                           mutate(val = value, lon=x, lat=y),
-    #                           contours = .contours_minor, linewidth = 0.5) +
-    add_major_contour_lines(df=ras |> ras2pts() |>
-                              mutate(val = value, lon=x, lat=y), 
-                              contours = .contours_major, linewidth = 0.75) +
-    add_basemap() 
-  
-  gg_formatted <- gg %>%
-    addColorBar(., 
-        c("white", rev(cpal[1:93])),
-        limits=limits,   
-        breaks=breaks,
-        cbar_labels= breaks, #cbar_labels,
-        
-       plot_type = "continuous") +
-      
-    rename_legend(title = cbar_title)
-  
-  return(gg_formatted)
-}
-  
+# # original - unsmoothed contour lines ----
+# 
+# plot_clim_map <- function(ras, cbar_title = cbar_title){
+#   g <- plot_var(data= ras |> ras2pts(), 
+#               mapdata, bbox, cpal = rev(cpal), .legend = TRUE, .interp = TRUE)
+#   
+#   
+#    gg <- g + add_border() + resize_cbar(29) +
+#     # add_minor_contour_lines(df=ras |> ras2pts() |>
+#     #                           mutate(val = value, lon=x, lat=y),
+#     #                           contours = .contours_minor, linewidth = 0.5) +
+#     add_major_contour_lines(df=ras |> ras2pts() |>
+#                               mutate(val = value, lon=x, lat=y), 
+#                               contours = .contours_major, linewidth = 0.75) +
+#     add_basemap() 
+#   
+#   gg_formatted <- gg %>%
+#     addColorBar(., 
+#         c("white", rev(cpal[1:93])),
+#         limits=limits,   
+#         breaks=breaks,
+#         cbar_labels= breaks, #cbar_labels,
+#         
+#        plot_type = "continuous") +
+#       
+#     rename_legend(title = cbar_title)
+#   
+#   return(gg_formatted)
+# }
+#   
 ```
 
+#### Local function to plot maps | smoothed contour lines -----
+```{r}
+## smoothed contour version due to high res of newer bio oracle ras's  ----
+plot_clim_map <- function(ras,
+                          cbar_title = cbar_title,
+                          contour_smooth = TRUE,
+                          contour_sigma = 2,
+                          contour_colour = "white") {
+
+   ## Ensure input is a RasterLayer ----
+  if (raster::nlayers(ras) != 1) {
+    stop("Raster must contain exactly one layer")
+  }
+  
+  if (!inherits(ras, "RasterLayer")) {
+    ras <- ras[[1]]
+  }
+  
+  ## Smooth raster for contour lines only ----
+  if (contour_smooth) {
+
+    # Gaussian smoothing kernel
+    k <- raster::focalWeight(
+      ras,
+      d = contour_sigma * raster::res(ras)[1],
+      type = "Gauss"
+    )
+
+    # Normalize kernel weights
+    k <- k / sum(k)
+
+    # Identify valid raster cells
+    ras_valid <- !is.na(ras)
+
+    # Replace NA values with zero for weighted smoothing
+    ras_filled <- ras
+    ras_filled[is.na(ras_filled)] <- 0
+
+    # Weighted sum of raster values
+    ras_weighted <- raster::focal(
+      ras_filled,
+      w = k,
+      fun = sum,
+      pad = TRUE,
+      padValue = 0
+    )
+
+    # Sum of weights for valid cells
+    ras_weights <- raster::focal(
+      ras_valid * 1,
+      w = k,
+      fun = sum,
+      pad = TRUE,
+      padValue = 0
+    )
+
+    # Normalize to account for missing cells
+    ras_contour <- ras_weighted / ras_weights
+
+    # Preserve original NA mask
+    ras_contour <- raster::mask(
+      ras_contour,
+      ras
+    )
+
+  } else {
+
+    ras_contour <- ras
+
+  }
+
+
+  ## Plot raster ----
+  g <- plot_var(
+    data = ras |> ras2pts(),
+    mapdata,
+    bbox,
+    cpal = rev(cpal),
+    .legend = TRUE,
+    .interp = TRUE
+  )
+
+
+  ## Add contour lines ----
+  gg <- g +
+    add_border() +
+    resize_cbar(29) +
+
+    # add_major_contour_lines(
+    #   df = ras_contour |> ras2pts() |>
+    #     mutate(val = value, lon = x, lat = y),
+    #   contours = .contours_major,
+    #   linewidth = 0.75
+    # ) +
+    
+    ggplot2::geom_contour(
+      data = ras_contour |> ras2pts() |>
+        mutate(val = value, lon = x, lat = y),
+      aes(x = lon, y = lat, z = val),
+      breaks = .contours_major,
+      colour = contour_colour,
+      linewidth = 0.75,
+      na.rm = TRUE
+    ) +
+
+    add_basemap()
+
+
+  ## Format colour bar ----
+  gg_formatted <- gg %>%
+    addColorBar(
+      .,
+      c("white", rev(cpal[1:93])),
+      limits = limits,
+      breaks = breaks,
+      cbar_labels = breaks,
+      plot_type = "continuous"
+    ) +
+
+    rename_legend(title = cbar_title)
+
+
+  return(gg_formatted)
+
+}
+```
 
 
 
@@ -204,19 +385,43 @@ plot_clim_map <- function(ras, cbar_title = cbar_title){
 
 # glorys histclim - native res
 gg_glorys_histclim_clim <- plot_clim_map(ras = clim_ras_histclim, #|> makePos(),
+                                    contour_smooth = TRUE, # fyi, added contour smoothing given hi res
+                                    contour_sigma = 2,
                                     cbar_title = cbar_title) 
 
 gg_glorys_histclim_resamp_clim <- plot_clim_map(ras = glorys_clim_resamp, #|> makePos(),
+                                    contour_smooth = TRUE, # fyi, added contour smoothing given hi res
+                                    contour_sigma = 2,
                                     cbar_title = cbar_title) 
 
-# gcm ssp2.6
-gg_gcm_ssp26_clim <- plot_clim_map(ras = clim_ras_ssp26, #|> makePos(),   
-                                    cbar_title = cbar_title)
+# # gcm ssp2.6
+# gg_gcm_ssp26_clim <- plot_clim_map(ras = clim_ras_ssp26, #|> makePos(),   
+#                                     cbar_title = cbar_title)
+# 
+# # gcm ssp8.5
+# gg_gcm_ssp85_clim <- plot_clim_map(ras = clim_ras_ssp85, #|> makePos()
+#                                     cbar_title = cbar_title)
 
-# gcm ssp8.5
-gg_gcm_ssp85_clim <- plot_clim_map(ras = clim_ras_ssp85, #|> makePos()
-                                    cbar_title = cbar_title)
 
+
+## UPDATE:  USE RESAMPLED BIO ORACLE RAS ---------------------------------------
+## and with contour smoothing -------
+## GCM SSP2.6 ----
+gg_gcm_ssp26_clim <- plot_clim_map(
+  ras = clim_ras_ssp26_resamp,
+  cbar_title = cbar_title,
+  contour_smooth = TRUE,
+  contour_sigma = 5#2
+)
+
+
+## GCM SSP8.5 ----
+gg_gcm_ssp85_clim <- plot_clim_map(
+  ras = clim_ras_ssp85_resamp,
+  cbar_title = cbar_title,
+  contour_smooth = TRUE,
+  contour_sigma = 5#2
+)
       
 ```
 
@@ -224,37 +429,165 @@ gg_gcm_ssp85_clim <- plot_clim_map(ras = clim_ras_ssp85, #|> makePos()
 #### Local function to plot diff maps -----
 ```{r}
 
-plot_clim_diff_map <- function(ras, cbar_title = cbar_title){
+# plot_clim_diff_map <- function(ras, cbar_title = cbar_title){
+# 
+#    g <-  plot_var(data=ras |> ras2pts(), mapdata, bbox, cpal = div_pal, .interp=TRUE, .legend = TRUE) 
+#    
+#    gg <- g + add_border() + resize_cbar(29) +
+#     #  
+#     # add_minor_contour_lines(df=diff_df |>
+#     #                           mutate(val = value, lon=x, lat=y),
+#     #                           contours = .contours_minor, linewidth = 0.5) +
+#     add_major_contour_lines(ras |> ras2pts() |>
+#                               mutate(val = value, lon=x, lat=y), 
+#                               contours = .contours_major, linewidth = 0.75) +
+#     add_basemap() 
+#   
+#     gg_formatted <- gg %>%
+#       addColorBar(., 
+#           div_pal[1:18],
+#           limits=limits,   
+#           breaks=breaks,
+#           cbar_labels=cbar_labels,
+#           
+#           plot_type = "continuous") +
+#       # labs(fill = ifelse(params$pred_model == 'growth_rate', 
+#       #                  'Difference in \nGrowth Rate \n(div/day)\n', 
+#       #                  'Difference in Total CTX \nProduction Rate \n(ng/ml/day)\n')) +    
+#     
+#       rename_legend(title = cbar_title)
+#     
+#   return(gg_formatted)
+# }
+```
 
-   g <-  plot_var(data=ras |> ras2pts(), mapdata, bbox, cpal = div_pal, .interp=TRUE, .legend = TRUE) 
-   
-   gg <- g + add_border() + resize_cbar(29) +
-    #  
-    # add_minor_contour_lines(df=diff_df |>
-    #                           mutate(val = value, lon=x, lat=y),
-    #                           contours = .contours_minor, linewidth = 0.5) +
-    add_major_contour_lines(ras |> ras2pts() |>
-                              mutate(val = value, lon=x, lat=y), 
-                              contours = .contours_major, linewidth = 0.75) +
-    add_basemap() 
-  
-    gg_formatted <- gg %>%
-      addColorBar(., 
-          div_pal[1:18],
-          limits=limits,   
-          breaks=breaks,
-          cbar_labels=cbar_labels,
-          
-          plot_type = "continuous") +
-      # labs(fill = ifelse(params$pred_model == 'growth_rate', 
-      #                  'Difference in \nGrowth Rate \n(div/day)\n', 
-      #                  'Difference in Total CTX \nProduction Rate \n(ng/ml/day)\n')) +    
-    
-      rename_legend(title = cbar_title)
-    
+#### Local function to plot diff maps | smooth contour-----
+```{r}
+## Plot climate difference maps with smoothed contours ----
+plot_clim_diff_map <- function(ras,
+                               cbar_title = cbar_title,
+                               contour_smooth = TRUE,
+                               contour_sigma = 2,
+                               contour_colour = "white") {
+
+  ## Ensure input is a RasterLayer ----
+  if (raster::nlayers(ras) != 1) {
+    stop("Raster must contain exactly one layer")
+  }
+
+  if (!inherits(ras, "RasterLayer")) {
+    ras <- ras[[1]]
+  }
+
+
+  ## Smooth raster for contour lines only ----
+  if (contour_smooth) {
+
+    # Gaussian smoothing kernel
+    k <- raster::focalWeight(
+      ras,
+      d = contour_sigma * raster::res(ras)[1],
+      type = "Gauss"
+    )
+
+    # Normalize kernel weights
+    k <- k / sum(k)
+
+    # Identify valid raster cells
+    ras_valid <- !is.na(ras)
+
+    # Replace NA values with zero for weighted smoothing
+    ras_filled <- ras
+    ras_filled[is.na(ras_filled)] <- 0
+
+    # Weighted sum of raster values
+    ras_weighted <- raster::focal(
+      ras_filled,
+      w = k,
+      fun = sum,
+      pad = TRUE,
+      padValue = 0
+    )
+
+    # Sum of weights for valid cells
+    ras_weights <- raster::focal(
+      ras_valid * 1,
+      w = k,
+      fun = sum,
+      pad = TRUE,
+      padValue = 0
+    )
+
+    # Normalize to account for missing cells
+    ras_contour <- ras_weighted / ras_weights
+
+    # Preserve original NA mask
+    ras_contour <- raster::mask(
+      ras_contour,
+      ras
+    )
+
+  } else {
+
+    ras_contour <- ras
+
+  }
+
+
+  ## Plot raster ----
+  g <- plot_var(
+    data = ras |> ras2pts(),
+    mapdata,
+    bbox,
+    cpal = div_pal,
+    .interp = TRUE,
+    .legend = TRUE
+  )
+
+
+  ## Add contour lines ----
+  gg <- g +
+    add_border() +
+    resize_cbar(29) +
+
+    # add_major_contour_lines(
+    #   df = ras_contour |> ras2pts() |>
+    #     mutate(val = value, lon = x, lat = y),
+    #   contours = .contours_major,
+    #   linewidth = 0.75
+    # ) +
+    ggplot2::geom_contour(
+      data = ras_contour |> ras2pts() |>
+        mutate(val = value, lon = x, lat = y),
+      aes(x = lon, y = lat, z = val),
+      breaks = .contours_major,
+      colour = contour_colour,
+      linewidth = 0.75,
+      na.rm = TRUE
+    ) +
+
+    add_basemap()
+
+
+  ## Format colour bar ----
+  gg_formatted <- gg %>%
+    addColorBar(
+      .,
+      div_pal[1:18],
+      limits = limits,
+      breaks = breaks,
+      cbar_labels = cbar_labels,
+      plot_type = "continuous"
+    ) +
+
+    rename_legend(title = cbar_title)
+
+
   return(gg_formatted)
+
 }
 ```
+
 
 
 ## Plot Clim Diff Maps---
@@ -283,17 +616,25 @@ if(params$var == "thetao"){
 
 ```{r}
 
+## FYI, don't need to update these vars b/c prev chunk reassigns to bio oracle resamp ras's 
 
 # SSP 2.6 - Glorys ----
 gg_clim_diff_ssp26_glorys_clim <- plot_clim_diff_map(ras = gg_clim_diff_ssp26_glorys, 
+                                    contour_smooth = TRUE,
+                                    contour_sigma = 8, #2,  # fyi, 2 is not enough to smooth the diffs
+                                    contour_colour = 'gray25',
                                     cbar_title = cbar_title) 
 
 # SSP 8.5 - Glorys ----
-gg_clim_diff_ssp85_glorys_clim <- plot_clim_diff_map(ras = gg_clim_diff_ssp85_glorys, #|> makePos(),   
+gg_clim_diff_ssp85_glorys_clim <- plot_clim_diff_map(ras = gg_clim_diff_ssp85_glorys, #|> makePos(),  
+                                    contour_smooth = TRUE,
+                                    contour_sigma = 8, #2,
                                     cbar_title = cbar_title)
 
 # SSP 8.5 - SSP 2.6 ----
 gg_clim_diff_ssp85_ssp26_clim  <- plot_clim_diff_map(ras = gg_clim_diff_ssp85_ssp26, #|> makePos()
+                                    contour_smooth = TRUE,
+                                    contour_sigma = 8, #2,
                                     cbar_title = cbar_title)
 
 ```
@@ -302,32 +643,54 @@ gg_clim_diff_ssp85_ssp26_clim  <- plot_clim_diff_map(ras = gg_clim_diff_ssp85_ss
 ### Save with Pos Preds ----
 ```{r}
 
+# gg_list <- list(gg_glorys_histclim_clim, 
+#                 gg_glorys_histclim_resamp_clim, gg_gcm_ssp26_clim, gg_gcm_ssp85_clim,
+#                 gg_clim_diff_ssp26_glorys_clim, gg_clim_diff_ssp85_glorys_clim, gg_clim_diff_ssp85_ssp26_clim
+#                 )
+
+
+# names(gg_list) <- c(glue('clim_map_histclim_glorys_{params$var}'),
+#                     glue('clim_map_histclim_glorys_resamp_{params$var}'),
+#                     glue('clim_map_ssp26_{params$var}'),
+#                     glue('clim_map_ssp85_{params$var}'),
+#                     
+#                     glue('clim_map_diff_ssp26_glorys_{params$var}'),
+#                     glue('clim_map_diff_ssp85_glorys_{params$var}'),
+#                     glue('clim_map_diff_ssp85_ssp26_{params$var}')
+#                     
+#                     )
+
+
+## UPDATE SAVE LIST USING EXPANDED LONS AND BIO ORACLE GCMS -----------------------------
 gg_list <- list(gg_glorys_histclim_clim, 
                 gg_glorys_histclim_resamp_clim, gg_gcm_ssp26_clim, gg_gcm_ssp85_clim,
                 gg_clim_diff_ssp26_glorys_clim, gg_clim_diff_ssp85_glorys_clim, gg_clim_diff_ssp85_ssp26_clim
                 )
 
-
-names(gg_list) <- c(glue('clim_map_histclim_glorys_{params$var}'),
-                    glue('clim_map_histclim_glorys_resamp_{params$var}'),
-                    glue('clim_map_ssp26_{params$var}'),
-                    glue('clim_map_ssp85_{params$var}'),
+names(gg_list) <- c(glue('clim_map_histclim_glorys_{params$var}_expanded_lons'),
+                    glue('clim_map_histclim_glorys_resamp_{params$var}_expanded_lons'),
+                    glue('clim_map_ssp126_{params$var}_expanded_lons'),
+                    glue('clim_map_ssp585_{params$var}_expanded_lons'),
                     
-                    glue('clim_map_diff_ssp26_glorys_{params$var}'),
-                    glue('clim_map_diff_ssp85_glorys_{params$var}'),
-                    glue('clim_map_diff_ssp85_ssp26_{params$var}')
+                    glue('clim_map_diff_ssp126_glorys_{params$var}_expanded_lons'),
+                    glue('clim_map_diff_ssp585_glorys_{params$var}_expanded_lons'),
+                    glue('clim_map_diff_ssp585_ssp126_{params$var}_expanded_lons')
                     
                     )
+
 
 
 ## Save pngs -----
 gg_fnames <-  here('figs', glue('{names(gg_list)}.png')) |> as.list()
 
 ## save - this works (so does the above commented out option)
+# w = 8
+w = 12 # expanded lons
+
 walk2(
   gg_fnames,
       gg_list,
-  \(path, plot) ggsave(path, plot, width = 8)
+  \(path, plot) ggsave(path, plot, width = w)
 )
   
 ```
@@ -340,7 +703,8 @@ library(gtools)
 
 
 # List plots files
-flist <- list.files(here('figs'),pattern = "clim_map",full.names=T)
+# flist <- list.files(here('figs'),pattern = "clim_map",full.names=T)
+flist <- list.files(here('figs'),pattern = "expanded_lons",full.names=T)
 plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
 
 plot_files_extent <- plot_files#[grepl(p_extent, plot_files, fixed=TRUE)] 
@@ -371,13 +735,13 @@ if(params$var == 'thetao'){
   gg_list_thetao = gg_list
 
   save(gg_list_thetao,
-    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}.rdata')))
+    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}_expanded_lon.rdata')))
 
 } else if(params$var == 'so') {
   gg_list_so = gg_list
 
   save(gg_list_so,
-    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}.rdata')))
+    file = here('data', 'gg_data', glue('gg_clims_and_clim_diffs_{params$var}_expanded_lon.rdata')))
 } 
   
 ```
