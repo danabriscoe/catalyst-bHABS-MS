@@ -13,6 +13,9 @@ params:
   # scenario: 'ssp85'
   # scenario: 'ssp126'
   scenario: 'ssp585'
+  scenario_yrs: '2030'
+  # scenario_yrs: '2090'
+  scenario_depth: 'depthsurf'
   type: 'histclim'
   # stat: !r NULL
   stat: 'all_time_mean'
@@ -142,14 +145,24 @@ if(params$source=='glorys' & is.null(params$stat)){
   flist <- list.files(fpath, pattern = "grd$", full.names=T)
   ## Pull all files by location, var, and type under each RCP or SSP scenario
   varfiles <- flist %>% 
-    # imap(., ~ .x[grepl(str_c("(?=.*",params$depth,")(?=.*",params$location,")(?=.*",params$scenario,")(?=.*",params$type,")"), 
+    ## original param ops -----
+    # # imap(., ~ .x[grepl(str_c("(?=.*",params$depth,")(?=.*",params$location,")(?=.*",params$scenario,")(?=.*",params$type,")"), 
+    # #                                        .x, 
+    # #                                        perl = TRUE)]) %>% 
+    # #                                 unlist()
+    
+    ## updated just for 2090 scenario param ----
+    #     imap(., ~ .x[grepl(params$scenario, 
     #                                        .x, 
     #                                        perl = TRUE)]) %>% 
     #                                 unlist()
-        imap(., ~ .x[grepl(params$scenario, 
-                                           .x, 
-                                           perl = TRUE)]) %>% 
+    
+    ## updated to include decadal scenarios param ---
+    imap(., ~ .x[grepl(str_c("(?=.*",params$scenario,")(?=.*",params$scenario_yrs,")(?=.*",params$scenario_depth,")"),
+                                           .x,
+                                           perl = TRUE)]) %>%
                                     unlist()
+    
 }
 
 
@@ -167,8 +180,11 @@ if(params$source=='glorys' & is.null(params$stat)){
     dates <- getPredDates(x=varfiles, idx = 8)
   
 } else if(params$source=='gcm'){
-  # dates <- str_c(getPredDates(x=varfiles, 6), "_", getPredDates(x=varfiles, 7))[1]
-  dates <- str_c(getPredDates(x=varfiles, 9), "_", getPredDates(x=varfiles, 10))[1] # for bio oracle
+  # # dates <- str_c(getPredDates(x=varfiles, 6), "_", getPredDates(x=varfiles, 7))[1]
+  # dates <- str_c(getPredDates(x=varfiles, 9), "_", getPredDates(x=varfiles, 10))[1] # for bio oracle
+  
+  ## for decadal scenarios -----
+   dates <- str_c(getPredDates(x=varfiles, 14))[1] # for bio oracle - decade speciric
 }  
 ```
 
@@ -268,8 +284,12 @@ if(params$source == "glorys"){
     pred_fname = glue("preds_df_list_{params$pred_model}_{params$type}_{params$source}_{params$stat}_expanded_lon")
   }
 } else if (params$source == "gcm"){
-  # pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
-    pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}") # bio oracle
+  # # pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}")
+  #   pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$source}") # bio oracle
+  
+  ## updated for decadal -----
+      pred_fname = glue("preds_df_list_{params$pred_model}_{params$scenario}_{params$scenario_depth}_{params$scenario_yrs}_{params$source}") # bio oracle
+  
 } 
   
 print(str_c('now saving pred list: ', pred_fname))  
@@ -280,7 +300,8 @@ print(str_c('now saving pred list: ', pred_fname))
 
 ```{r}
 # f = here('data', 'preds', str_c(pred_fname, '.rds'))
-f = here('data', 'preds', 'expanded_lon', str_c(pred_fname, '.rdata'))
+# f = here('data', 'preds', 'expanded_lon', str_c(pred_fname, '.rdata'))
+f = here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_{params$scenario_yrs}"), str_c(pred_fname, '.rdata'))
 save(preds_list, file = f)
 
 ```

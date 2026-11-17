@@ -4,8 +4,8 @@ author: "Dana K Briscoe"
 date: "`r Sys.Date()`"
 output: html_document
 params:
-  source: 'glorys'
-  # source: 'gcm'
+  # source: 'glorys'
+  source: 'gcm'
   var: 'thetao'
   # var: 'so'
   depth: '_0m'
@@ -13,12 +13,15 @@ params:
   # scenario: 'ssp85'
   scenario: 'ssp126'
   # scenario: 'ssp85'
+  scenario_yrs: '2030'
+  # scenario_yrs: '2090'
+  scenario_depth: 'depthsurf'
   type: 'histclim'
   # stat: !r NULL
   stat: "all_time_mean"
   location: 'full'
-  pred_model: 'growth_rate'
-  # pred_model: 'CTX_rate'
+  # pred_model: 'growth_rate'
+  pred_model: 'CTX_rate'
   contour_labs: FALSE
   cbar_ticks_int: 1
   contours_major: TRUE
@@ -108,11 +111,22 @@ if(is.null(params$stat)){
                                    glue('preds_df_list_{params$pred_model}_histclim_glorys_{params$stat}_expanded_lon.rdata'))) |> stack()
 }
 
-pred_ras_ssp126 <- loadRData(here('data', 'preds', 'expanded_lon',
-                                   glue('preds_df_list_{params$pred_model}_ssp126_gcm.rdata'))) |> stack()
+# pred_ras_ssp126 <- loadRData(here('data', 'preds', 'expanded_lon',
+#                                    glue('preds_df_list_{params$pred_model}_ssp126_gcm.rdata'))) |> stack()
+# 
+# pred_ras_ssp585 <- loadRData(here('data', 'preds', 'expanded_lon',
+#                                    glue('preds_df_list_{params$pred_model}_ssp585_gcm.rdata'))) |> stack()
 
-pred_ras_ssp585 <- loadRData(here('data', 'preds', 'expanded_lon',
-                                   glue('preds_df_list_{params$pred_model}_ssp585_gcm.rdata'))) |> stack()
+
+### updated for decadal scenarios
+pred_ras_ssp126 <- loadRData(here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_{params$scenario_yrs}"),
+                                  glue("preds_df_list_{params$pred_model}_ssp126_{params$scenario_depth}_{params$scenario_yrs}_{params$source}.rdata")
+                                  )) |> stack()
+
+pred_ras_ssp585 <- loadRData(here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_{params$scenario_yrs}"),
+                                  glue("preds_df_list_{params$pred_model}_ssp585_{params$scenario_depth}_{params$scenario_yrs}_{params$source}.rdata")
+                                  )) |> stack()
+
 
 
 ```
@@ -400,9 +414,12 @@ gg_gcm_ssp585_pred <- plot_preds_map(ras = pred_ras_ssp585_resamp, #|> makePos()
 
 
 gg_list <- list(gg_glorys_histclim_pred, gg_gcm_ssp126_pred, gg_gcm_ssp585_pred)
+# names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals_expanded_lon'),
+#                     glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals_expanded_lon'),
+#                     glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals_expanded_lon'))
 names(gg_list) <- c(glue('pred_map_glorys_histclim_{params$pred_model}_pos_vals_expanded_lon'),
-                    glue('pred_map_gcm_ssp26_{params$pred_model}_pos_vals_expanded_lon'),
-                    glue('pred_map_gcm_ssp85_{params$pred_model}_pos_vals_expanded_lon'))
+                    glue('pred_map_gcm_ssp26_{params$pred_model}_{params$scenario_depth}_{params$scenario_yrs}_pos_vals_expanded_lon'),
+                    glue('pred_map_gcm_ssp85_{params$pred_model}_{params$scenario_depth}_{params$scenario_yrs}_pos_vals_expanded_lon'))
 
 if(params$stat == "all_time_mean"){
   gg_fnames <-  here('figs', glue('{names(gg_list)}_{params$stat}_expanded_lon.png')) |> as.list()
@@ -432,8 +449,11 @@ library(gtools)
 
 
 # List plots files
-# flist <- list.files(here('figs'),pattern = "pred_map",full.names=T)
-flist <- list.files(here('figs'),pattern = "_expanded_lon",full.names=T)
+# # flist <- list.files(here('figs'),pattern = "pred_map",full.names=T)
+# flist <- list.files(here('figs'),pattern = "_expanded_lon",full.names=T)
+# 
+# just do files in this script - not entire folder!
+flist <- unlist(gg_fnames)
 
 plot_files <- flist#[grepl(glue("_{env_info$eov}"), flist, fixed=TRUE)] 
 
@@ -479,7 +499,7 @@ crop_image(pfiles)
 
 fpath <- here(
   'data', 'gg_data', 'expanded_lon',
-  glue('gg_pred_maps_{params$pred_model}_expanded_lon.rdata')
+  glue('gg_pred_maps_{params$pred_model}_{params$scenario_depth}_{params$scenario_yrs}_expanded_lon.rdata')
 )
 
 save(
