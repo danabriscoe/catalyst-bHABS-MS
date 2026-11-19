@@ -109,13 +109,15 @@ regions <- list(
     ymax = -16
   ),
   
-  ## 3. Southeastern Queensland / NSW ----
-  nsw = list(
-    label = "Southeastern QLD and NSW",
-    xmin = 150,
-    xmax = 155,
-    ymin = -36,
-    ymax = -27
+
+  
+  ## 3. Southern Japan / East China Sea ----
+  southern_japan = list(
+    label = "Southern Japan Region",
+    xmin = 125,
+    xmax = 142,
+    ymin = 27,
+    ymax = 38
   ),
   
   ## 4. Northern New Zealand ----
@@ -127,14 +129,15 @@ regions <- list(
     ymax = -33
   ),
   
-  ## 5. Southern Japan / East China Sea ----
-  southern_japan = list(
-    label = "Southern Japan Region",
-    xmin = 125,
-    xmax = 142,
-    ymin = 27,
-    ymax = 38
+  ## 5. Southeastern Queensland / NSW ----
+  nsw = list(
+    label = "Southeastern QLD and NSW",
+    xmin = 150,
+    xmax = 155,
+    ymin = -36,
+    ymax = -27
   )
+  
   
 )
 
@@ -148,8 +151,8 @@ scenarios <- c(
 
 scenario_labels <- c(
   histclim = "Historical",
-  ssp126 = "SSP126",
-  ssp585 = "SSP585"
+  ssp126 = "SSP-2.6",
+  ssp585 = "SSP-8.5"
 )
 
 
@@ -187,10 +190,16 @@ sites <- data.frame(
 ## 3. File paths
 ## ============================================================
 
+pred_hist_dir <- here(
+  "data",
+  "preds",
+  "expanded_lon" 
+)
+
 pred_dir <- here(
   "data",
   "preds",
-  "expanded_lon"
+  "expanded_lon", "preds_scenario_depthsurf_by_decade"
 )
 
 habitat_file <- here(
@@ -213,6 +222,43 @@ dir.create(
 )
 
 
+# ## ============================================================
+# ## 4. Load prediction rasters
+# ## ============================================================
+# 
+# load_pred_ras <- function(
+#     scenario,
+#     pred_model = "CTX_rate",
+#     stat = "all_time_mean",
+#     
+#     scenario_depth = "depthsurf",
+#     scenario_yrs = "2090"
+# ) {
+#   
+#   ## Filename ----
+#   if (scenario == "histclim") {
+#     
+#     filename <- glue(
+#       "preds_df_list_{pred_model}_histclim_glorys_{stat}_expanded_lon.rdata"
+#     )
+#     
+#   } else {
+#     
+#     filename <- glue(
+#       # "preds_df_list_{pred_model}_{scenario}_gcm.rdata"
+#       "preds_df_list_{pred_model}_{scenario}_{scenario_depth}_{scenario_yrs}_gcm.rdata"
+#     )
+#     
+#   }
+#   
+#   
+#   fpath <- file.path(pred_dir, filename)
+#   
+#   if (!file.exists(fpath)) {
+#     stop(glue("Missing prediction file: {fpath}"))
+#   }
+#   
+
 ## ============================================================
 ## 4. Load prediction rasters
 ## ============================================================
@@ -220,31 +266,42 @@ dir.create(
 load_pred_ras <- function(
     scenario,
     pred_model = "CTX_rate",
-    stat = "all_time_mean"
+    stat = "all_time_mean",
+    scenario_depth = "depthsurf",
+    scenario_yrs = "2090"
 ) {
   
-  ## Filename ----
+  ## Historical predictions ----
   if (scenario == "histclim") {
     
     filename <- glue(
       "preds_df_list_{pred_model}_histclim_glorys_{stat}_expanded_lon.rdata"
     )
     
+    ## Use historical directory
+    input_dir <- pred_hist_dir
+    
   } else {
     
+    ## Future SSP predictions ----
     filename <- glue(
-      "preds_df_list_{pred_model}_{scenario}_gcm.rdata"
+      "preds_df_list_{pred_model}_{scenario}_{scenario_depth}_{scenario_yrs}_gcm.rdata"
     )
     
+    ## Use future predictions directory
+    input_dir <- pred_dir
   }
   
+  ## Construct full path ----
+  fpath <- file.path(input_dir, filename)
   
-  fpath <- file.path(pred_dir, filename)
-  
+  ## Check file exists ----
   if (!file.exists(fpath)) {
     stop(glue("Missing prediction file: {fpath}"))
   }
   
+  ## Continue with existing raster loading code below ----
+
   
   ## Load into temporary environment ----
   env <- new.env(parent = globalenv())
@@ -1717,9 +1774,14 @@ ggsave(
 p_supp_ctx_GO <- make_supp_figure(
   pred_list = display_preds,
   selected_regions = c(
-    "nsw",
+    # "nsw",
+    # "north_nz",
+    # "southern_japan"
+    
+    ## reorder
+    "southern_japan",
     "north_nz",
-    "southern_japan"
+    "nsw"
   )
 )
 
