@@ -13,15 +13,15 @@ params:
   # scenario: 'ssp85'
   scenario: 'ssp126'
   # scenario: 'ssp85'
-  scenario_yrs: '2030'
-  # scenario_yrs: '2090'
+  # scenario_yrs: '2030'
+  scenario_yrs: '2090'
   scenario_depth: 'depthsurf'
   type: 'histclim'
   # stat: !r NULL
   stat: "all_time_mean"
   location: 'full'
-  # pred_model: 'growth_rate'
-  pred_model: 'CTX_rate'
+  pred_model: 'growth_rate'
+  # pred_model: 'CTX_rate'
   contour_labs: FALSE
   cbar_ticks_int: 1
   contours_major: TRUE
@@ -119,11 +119,11 @@ if(is.null(params$stat)){
 
 
 ### updated for decadal scenarios
-pred_ras_ssp126 <- loadRData(here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_{params$scenario_yrs}"),
+pred_ras_ssp126 <- loadRData(here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_by_decade"),
                                   glue("preds_df_list_{params$pred_model}_ssp126_{params$scenario_depth}_{params$scenario_yrs}_{params$source}.rdata")
                                   )) |> stack()
 
-pred_ras_ssp585 <- loadRData(here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_{params$scenario_yrs}"),
+pred_ras_ssp585 <- loadRData(here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_by_decade"),
                                   glue("preds_df_list_{params$pred_model}_ssp585_{params$scenario_depth}_{params$scenario_yrs}_{params$source}.rdata")
                                   )) |> stack()
 
@@ -170,9 +170,67 @@ pred_ras_ssp585_resamp <- terra::resample(pred_ras_ssp585, pred_ras_histclim, me
 # mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
 #   filter(long >= 100 & long <= 210)
 
+# # for expanded lons ----
+# mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
+#   filter(long >= 100 & long <= 260)
 
-mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
-  filter(long >= 100 & long <= 260)
+
+## upd: higher res for expanded lons ----
+library(sf)
+library(dplyr)
+library(rnaturalearth)
+
+## ============================================================
+## 1. High-resolution Natural Earth polygons
+## ============================================================
+
+world <- rnaturalearth::ne_countries(
+  scale = 10,
+  returnclass = "sf"
+)
+
+# Original polygons
+world_1 <- world
+
+# Second copy shifted +360 degrees
+world_2 <- world
+
+sf::st_geometry(world_2) <-
+  sf::st_geometry(world_2) + c(360, 0)
+
+sf::st_crs(world_2) <- sf::st_crs(world_1)
+
+# Combine original and shifted polygons
+world_360 <- rbind(world_1, world_2)
+
+
+## ============================================================
+## 2. Convert sf MULTIPOLYGON to regular data frame
+## ============================================================
+
+coords <- as.data.frame(
+  sf::st_coordinates(world_360)
+)
+
+# Build output data frame explicitly
+mapdata <- data.frame(
+  long = coords$X,
+  lat = coords$Y,
+
+  # Unique group for each polygon ring
+  group = as.numeric(
+    interaction(coords$L3, coords$L2, coords$L1, drop = TRUE)
+  ),
+
+  order = seq_len(nrow(coords)),
+
+  # Country names from corresponding sf features
+  region = as.character(world_360$name[coords$L3]),
+
+  subregion = NA_character_
+)
+
+
 
 ```
 
@@ -188,7 +246,8 @@ bbox <- tibble(xmin = 120, xmax = 260, ymin = -60, ymax = 60, xstep = 10, ystep 
 # color pal
 smooth_rainbow <- khroma::colour("smooth rainbow")
 # cpal <- smooth_rainbow(length(seq(0, 100, 1)), range = c(0, 0.9));
-cpal <- c(smooth_rainbow(length(seq(0, 0.25, length=100)), range = c(0, 0.9)), "#9e2a2b", "firebrick4")#, "#540b0e")
+# cpal <- c(smooth_rainbow(length(seq(0, 0.25, length=100)), range = c(0, 0.9)), "#9e2a2b", "firebrick4")#, "#540b0e")
+cpal <- c(smooth_rainbow(length(seq(0, 0.25, length=100)), range = c(0, 0.9)), "#9e2a2b", "firebrick4","#540b0e")
 cpal <- rev(cpal)
 ```
 
