@@ -40,6 +40,11 @@ library(purrr)
 library(khroma)
 library(RColorBrewer)
 library(terra)
+
+library(sf)
+library(dplyr)
+library(rnaturalearth)
+
 library(glue)
 library(here)
 ```
@@ -175,9 +180,65 @@ gg_diff_ssp585_ssp126_df <- as(gg_diff_ssp585_ssp126,"Raster") %>% ras2pts()
 # mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
 #   filter(long >= 100 & long <= 210)
 
+# # for expanded lons ----
+# mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
+#   filter(long >= 100 & long <= 260)
 
-mapdata <- ggplot2::map_data("world", wrap = c(-25, 335), ylim = c(-75, 75)) %>%
-  filter(long >= 100 & long <= 260)
+
+
+## upd: higher res for expanded lons ----
+
+## ============================================================
+## 1. High-resolution Natural Earth polygons
+## ============================================================
+
+world <- rnaturalearth::ne_countries(
+  scale = 10,
+  returnclass = "sf"
+)
+
+# Original polygons
+world_1 <- world
+
+# Second copy shifted +360 degrees
+world_2 <- world
+
+sf::st_geometry(world_2) <-
+  sf::st_geometry(world_2) + c(360, 0)
+
+sf::st_crs(world_2) <- sf::st_crs(world_1)
+
+# Combine original and shifted polygons
+world_360 <- rbind(world_1, world_2)
+
+
+## ============================================================
+## 2. Convert sf MULTIPOLYGON to regular data frame
+## ============================================================
+
+coords <- as.data.frame(
+  sf::st_coordinates(world_360)
+)
+
+# Build output data frame explicitly
+mapdata <- data.frame(
+  long = coords$X,
+  lat = coords$Y,
+
+  # Unique group for each polygon ring
+  group = as.numeric(
+    interaction(coords$L3, coords$L2, coords$L1, drop = TRUE)
+  ),
+
+  order = seq_len(nrow(coords)),
+
+  # Country names from corresponding sf features
+  region = as.character(world_360$name[coords$L3]),
+
+  subregion = NA_character_
+)
+
+
 
 ```
 

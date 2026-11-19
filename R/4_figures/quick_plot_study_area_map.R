@@ -393,6 +393,131 @@ ggsave(
   bg = "white"
 )
 
+
+
+## Now with Magnitude ---------------
+
+
+## Plot toxin concentrations by location ----
+
+## Prepare toxin data
+gamb_toxin <- gamb_locs %>%
+  mutate(
+    toxin_data = trimws(as.character(toxin_data)),
+    
+    toxin_status = case_when(
+      tolower(toxin_data) == "not tested" ~ "Not tested",
+      grepl("no detectable", toxin_data, ignore.case = TRUE) ~ "Not detectable",
+      !is.na(suppressWarnings(as.numeric(toxin_data))) ~ "Measured",
+      TRUE ~ NA_character_
+    ),
+    
+    toxin_value = suppressWarnings(as.numeric(toxin_data))
+  ) %>%
+  filter(!is.na(toxin_status), !is.na(lat), !is.na(lon_360))
+
+
+## Create toxin magnitude plot ----
+gp_w_toxin <-
+  gg_glorys_histclim_pred +
+  
+  ## Measured toxin concentrations
+  geom_point(
+    data = gamb_toxin %>% filter(toxin_status == "Measured"),
+    aes(
+      x = lon_360,
+      y = lat,
+      size = toxin_value
+    ),
+    shape = 21,
+    fill = "white",
+    colour = "black",
+    stroke = 0.8,
+    alpha = 0.85,
+    inherit.aes = FALSE
+  ) +
+  
+  ## Not detectable: fixed-size circle
+  geom_point(
+    data = gamb_toxin %>% filter(toxin_status == "Not detectable"),
+    aes(x = lon_360, y = lat),
+    shape = 21,
+    size = 2.5,
+    fill = "white",
+    colour = "black",
+    stroke = 0.8,
+    inherit.aes = FALSE
+  ) +
+  
+  # ## Not tested: X symbol
+  # geom_point(
+  #   data = gamb_toxin %>% filter(toxin_status == "Not tested"),
+  #   aes(x = lon_360, y = lat),
+  #   shape = 4,
+  #   size = 3,
+  #   colour = "white",
+  #   stroke = 1.1,
+  #   inherit.aes = FALSE
+  # ) +
+  
+  ## Not tested: fixed-size triangle
+  geom_point(
+    data = gamb_toxin %>% filter(toxin_status == "Not tested"),
+    aes(x = lon_360, y = lat),
+    shape = 24,         # Filled triangle
+    size = 2.5,         # Same size as Not detectable circles
+    fill = "white",
+    colour = "black",
+    stroke = 0.8,
+    inherit.aes = FALSE
+  ) +
+  
+  ## Scale circle AREA by toxin concentration
+  scale_size_area(
+    max_size = 10,
+    breaks = c(0.5, 2, 5, 10, 20),
+    name = "Total CTXs (pg/cell)"
+  ) +
+  
+  labs(
+    caption = paste0(
+      "Predicted growth rate (1993–2025) with ",
+      "G. polynesiensis toxin concentrations"
+    )
+  ) +
+  
+  theme(
+    legend.position = "right"
+  )
+
+
+## Preview ----
+gp_w_toxin
+
+
+## Save ----
+filenm_gp_toxin <- here(
+  "figs",
+  "study_area_with_Growth_rate_preds_1993_2025_and_GambMap_Toxin.png"
+)
+
+ggsave(
+  filename = filenm_gp_toxin,
+  plot = gp_w_toxin,
+  width = 14,
+  height = 10,
+  units = "in",
+  dpi = 300,
+  bg = "white"
+)
+
+
+
+
+
+
+
+
 # Then separately run your normal cropped version
 
 

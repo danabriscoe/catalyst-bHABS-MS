@@ -13,8 +13,8 @@ params:
   # scenario: 'ssp85'
   # scenario: 'ssp126'
   scenario: 'ssp585'
-  scenario_yrs: '2030'
-  # scenario_yrs: '2090'
+  # scenario_yrs: '2030'
+  scenario_yrs: '2090'
   scenario_depth: 'depthsurf'
   type: 'histclim'
   # stat: !r NULL
@@ -231,8 +231,13 @@ preds_list <-
     # predsurfs[predsurfs[['salinity']] < 20] <- NA
     predsurfs[predsurfs[['temp']] <= 17.5] <- NA
     predsurfs[predsurfs[['temp']] >= 30] <- NA
-    predsurfs[predsurfs[['salinity']] <= 15] <- NA
-    predsurfs[predsurfs[['salinity']] >= 45] <- NA
+    # predsurfs[predsurfs[['salinity']] <= 15] <- NA
+    # predsurfs[predsurfs[['salinity']] >= 45] <- NA
+    
+    ## dkb note: 19 nov 2026 - update sal ranges to match lab exper ranges
+    predsurfs[predsurfs[['salinity']] <= 25] <- NA
+    predsurfs[predsurfs[['salinity']] >= 40] <- NA
+    
   }
   
   # if(params$pred_model=='CTX_rate'){  # dkbcommented out (mar 2025 bc using 17.5-32.5; 20-40 ranges for both growth rates and ctx rates)
@@ -244,9 +249,18 @@ preds_list <-
   # } 
   pred_lm <- predict(predsurfs, model_fit, type = 'response') # fyi, switched from gam to lm obj identifier bc not really a gam
 
+  
+  # if(params$make_pos){
+  #   pred_lm[pred_lm <= 0 | is.na(pred_lm)] <- 0
+  # }
+  
+  ## update above to this: retains NA values for excluded environments and converts only negative predictions to zero.
   if(params$make_pos){
-    pred_lm[pred_lm <= 0 | is.na(pred_lm)] <- 0
-  }
+  pred_lm[pred_lm < 0 & !is.na(pred_lm)] <- 0
+}
+  
+  
+  
   # pred_df <- ras2pts(pred_lm)
   pred_lm  # fyi, wait and convert   # ras2pts(pred_lm) in plot preds maps
   
@@ -301,7 +315,7 @@ print(str_c('now saving pred list: ', pred_fname))
 ```{r}
 # f = here('data', 'preds', str_c(pred_fname, '.rds'))
 # f = here('data', 'preds', 'expanded_lon', str_c(pred_fname, '.rdata'))
-f = here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_{params$scenario_yrs}"), str_c(pred_fname, '.rdata'))
+f = here('data', 'preds', 'expanded_lon', glue("preds_scenario_{params$scenario_depth}_by_decade"), str_c(pred_fname, '.rdata'))
 save(preds_list, file = f)
 
 ```

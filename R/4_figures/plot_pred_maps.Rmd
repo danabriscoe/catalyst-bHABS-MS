@@ -11,8 +11,8 @@ params:
   depth: '_0m'
   # scenario: 'ssp26'
   # scenario: 'ssp85'
-  scenario: 'ssp126'
-  # scenario: 'ssp85'
+  # scenario: 'ssp126'
+  scenario: 'ssp85'
   # scenario_yrs: '2030'
   scenario_yrs: '2090'
   scenario_depth: 'depthsurf'
@@ -20,8 +20,8 @@ params:
   # stat: !r NULL
   stat: "all_time_mean"
   location: 'full'
-  pred_model: 'growth_rate'
-  # pred_model: 'CTX_rate'
+  # pred_model: 'growth_rate'
+  pred_model: 'CTX_rate'
   contour_labs: FALSE
   cbar_ticks_int: 1
   contours_major: TRUE
@@ -46,6 +46,12 @@ library(tidyverse)
 library(readxl)
 library(raster)
 library(mgcv)
+
+library(sf)
+library(dplyr)
+library(rnaturalearth)
+
+
 library(purrr)
 library(glue)
 library(here)
@@ -176,9 +182,6 @@ pred_ras_ssp585_resamp <- terra::resample(pred_ras_ssp585, pred_ras_histclim, me
 
 
 ## upd: higher res for expanded lons ----
-library(sf)
-library(dplyr)
-library(rnaturalearth)
 
 ## ============================================================
 ## 1. High-resolution Natural Earth polygons
